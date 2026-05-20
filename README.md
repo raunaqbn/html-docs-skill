@@ -21,6 +21,23 @@ npx @html-docs/cli publish dashboard.html
 npx @html-docs/cli publish page.html
 ```
 
+### As an MCP server (Claude Code, Cursor, Windsurf, Cline)
+
+Add to your MCP config (e.g. `~/.claude/mcp.json` or `.cursor/mcp.json`):
+
+```json
+{
+  "mcpServers": {
+    "html-docs": {
+      "command": "npx",
+      "args": ["@html-docs/cli", "--mcp"]
+    }
+  }
+}
+```
+
+This gives your agent native `publish`, `update`, `read`, `comment`, and `list_comments` tools — no skill file needed.
+
 ### As an agent skill (Claude Code, Cursor, Codex, etc.)
 
 ```bash
@@ -94,15 +111,30 @@ curl -X POST https://www.html-docs.com/api/v1/docs \
 
 ## Agent compatibility
 
-Works with any AI agent that can make HTTP requests:
+Works with any AI agent that can make HTTP requests or use MCP:
 
-- Claude Code
-- Cursor
+- Claude Code (MCP or skill)
+- Cursor (MCP or skill)
+- Windsurf (MCP)
+- Cline (MCP)
 - Codex
 - OpenClaw
 - Amp
 - Gemini CLI
 - Any HTTP-capable tool
+
+### MCP tools
+
+When running as an MCP server (`--mcp`), the following tools are available:
+
+| Tool | Description |
+|------|-------------|
+| `publish` | Publish HTML content to a live URL |
+| `publish_file` | Publish a local HTML file to a live URL |
+| `update` | Update an existing document |
+| `read` | Read a document's content and regions |
+| `comment` | Add a comment anchored to specific text |
+| `list_comments` | List all comments on a document |
 
 ## API docs
 
