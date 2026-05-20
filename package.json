@@ -1,7 +1,7 @@
 {
-  "name": "html-docs",
+  "name": "@raunaqn/html-docs",
   "version": "0.1.0",
-  "description": "Instant web hosting for AI agents — publish HTML sites, dashboards, and documents to html-docs.com in one command.",
+  "description": "Instant web hosting for AI agents \u2014 publish HTML sites, dashboards, and documents to html-docs.com in one command.",
   "author": "Raunaq Naidu <raunaqbn@gmail.com>",
   "license": "MIT",
   "repository": {
