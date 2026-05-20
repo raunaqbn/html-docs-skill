@@ -4,9 +4,9 @@
  * html-docs CLI — instant web hosting for AI agents.
  *
  * Usage:
- *   npx html-docs publish <file-or-dir> [--slug <slug>] [--api-key <key>]
- *   npx html-docs auth
- *   npx html-docs update <id> <file-or-dir> [--token <token>]
+ *   npx @html-docs/cli publish <file-or-dir> [--slug <slug>] [--api-key <key>]
+ *   npx @html-docs/cli auth
+ *   npx @html-docs/cli update <id> <file-or-dir> [--token <token>]
  */
 
 const { execSync, spawn } = require('child_process');
@@ -214,10 +214,10 @@ Usage:
     --api-key <key>                  API key for authenticated updates
 
 Examples:
-  npx html-docs publish page.html
-  npx html-docs publish ./site/ --slug my-dashboard
-  npx html-docs auth
-  npx html-docs update abc-123 page.html --token xyz
+  npx @html-docs/cli publish page.html
+  npx @html-docs/cli publish ./site/ --slug my-dashboard
+  npx @html-docs/cli auth
+  npx @html-docs/cli update abc-123 page.html --token xyz
 
 Docs: https://www.html-docs.com/developers
 `);

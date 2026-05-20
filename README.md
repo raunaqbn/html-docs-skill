@@ -3,7 +3,7 @@
 **Instant web hosting for AI agents.** Publish HTML sites, dashboards, and documents to [html-docs.com](https://www.html-docs.com) in one command.
 
 ```
-npx html-docs publish dashboard.html
+npx @html-docs/cli publish dashboard.html
 → https://www.html-docs.com/site/my-dashboard-a7k2
 ```
 
@@ -18,7 +18,7 @@ npx html-docs publish dashboard.html
 ### As an npx command (recommended)
 
 ```bash
-npx html-docs publish page.html
+npx @html-docs/cli publish page.html
 ```
 
 ### As an agent skill (Claude Code, Cursor, Codex, etc.)
@@ -41,22 +41,22 @@ curl -fsSL https://raw.githubusercontent.com/raunaqbn/html-docs-skill/main/html-
 
 ```bash
 # Anonymous (zero friction, no account needed)
-npx html-docs publish page.html
+npx @html-docs/cli publish page.html
 
 # With a custom slug
-npx html-docs publish dashboard.html --slug quarterly-report
+npx @html-docs/cli publish dashboard.html --slug quarterly-report
 
 # Authenticated (permanent, in your dashboard)
-npx html-docs publish dashboard.html --api-key hdk_your_key
+npx @html-docs/cli publish dashboard.html --api-key hdk_your_key
 
 # Publish a directory (looks for index.html)
-npx html-docs publish ./my-site/
+npx @html-docs/cli publish ./my-site/
 ```
 
 ### Authenticate
 
 ```bash
-npx html-docs auth
+npx @html-docs/cli auth
 ```
 
 Saves your API key to `~/.htmldocs/credentials`. After this, all publishes are permanent.
@@ -64,7 +64,7 @@ Saves your API key to `~/.htmldocs/credentials`. After this, all publishes are p
 ### Update
 
 ```bash
-npx html-docs update <doc-id> page.html --token <token>
+npx @html-docs/cli update <doc-id> page.html --token <token>
 ```
 
 ### Direct curl (no install needed)
