@@ -1,0 +1,38 @@
+{
+  "name": "html-docs",
+  "version": "0.1.0",
+  "description": "Instant web hosting for AI agents — publish HTML sites, dashboards, and documents to html-docs.com in one command.",
+  "author": "Raunaq Naidu <raunaqbn@gmail.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/raunaqbn/html-docs-skill"
+  },
+  "homepage": "https://www.html-docs.com/developers",
+  "keywords": [
+    "html-docs",
+    "hosting",
+    "publish",
+    "agent",
+    "ai",
+    "claude-code",
+    "cursor",
+    "codex",
+    "skill",
+    "web-hosting",
+    "dashboard",
+    "static-site"
+  ],
+  "bin": {
+    "html-docs": "./bin/cli.js"
+  },
+  "files": [
+    "bin/",
+    "html-docs/",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=18"
+  }
+}
