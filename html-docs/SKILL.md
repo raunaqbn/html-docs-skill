@@ -124,6 +124,30 @@ authoring any non-trivial doc.** Essentials:
   consistently (one color per component/layer + legend), label every box and
   arrow, and prefer a few precise diagrams over one busy one.
 
+### The full reference library
+
+The design system is split across focused references. Read the one that fits
+what you're doing:
+
+- **[references/design-system.md](references/design-system.md)** — the core:
+  creative brief, typography & color systems, archetypes, component patterns,
+  diagrams, motion. Start here.
+- **[references/anti-slop.md](references/anti-slop.md)** — a catalog of the
+  tells that make a page look AI-generated, each with a detect-heuristic and a
+  fix. Run it as a linter before publishing.
+- **[references/design-dna.md](references/design-dna.md)** — when there's a
+  reference to match (a screenshot, a named site, a brand, a sibling doc):
+  extract its design DNA as a spec, then author to it.
+- **[references/design-commands.md](references/design-commands.md)** — a shared
+  vocabulary (`audit`, `polish`, `bolder`, `quieter`, `typeset`, `colorize`,
+  `illustrate`, `match`, `theme`…) for steering a doc, yourself or with the user.
+- **[references/effects.md](references/effects.md)** — the finishing layer:
+  CSS-only backgrounds, texture, depth, motion, and signature marks, with
+  copy-paste recipes by mood.
+
+A good default flow: read design-system.md, author from the creative brief,
+then `audit` against anti-slop.md and `polish` before you publish.
+
 ## 2. Publish as a live website
 
 One POST gives you a hosted page — raw HTML served directly, no editor chrome:
