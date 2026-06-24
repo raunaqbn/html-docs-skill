@@ -21,16 +21,34 @@ npx @html-docs/cli publish dashboard.html
 npx @html-docs/cli publish page.html
 ```
 
-### As an MCP server (Claude Code, Cursor, Windsurf, Cline)
+### As an MCP server (Claude Code, Cursor, Windsurf, Cline, Codex)
 
-Add to your MCP config (e.g. `~/.claude/mcp.json` or `.cursor/mcp.json`):
+One command — auto-detects your installed clients and wires in the server:
+
+```bash
+npx @html-docs/cli install
+```
+
+Or target a specific client (and optionally bake in your API key):
+
+```bash
+npx @html-docs/cli install claude-code
+npx @html-docs/cli install cursor --api-key hdk_your_key
+```
+
+This writes the html-docs MCP server into the client's own config file
+(`~/.claude.json`, `~/.cursor/mcp.json`, `~/.codeium/windsurf/mcp_config.json`,
+`~/.codex/config.toml`, or Cline's settings), preserving any servers you
+already have. Restart the client to load the tools.
+
+Prefer to edit JSON by hand? Add this to your MCP config:
 
 ```json
 {
   "mcpServers": {
     "html-docs": {
       "command": "npx",
-      "args": ["@html-docs/cli", "--mcp"]
+      "args": ["-y", "@html-docs/cli", "--mcp"]
     }
   }
 }

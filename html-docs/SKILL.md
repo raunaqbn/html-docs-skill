@@ -1,206 +1,267 @@
 ---
 name: html-docs
 description: >
-  html-docs.com lets agents publish websites, dashboards, and documents to
-  live URLs instantly. Use when asked to "publish this", "host this",
-  "deploy this", "share this on the web", "make a website", "put this
-  online", "create a webpage", "generate a URL", "build a dashboard",
-  or "publish to html-docs". Published pages with inline JavaScript
-  (Chart.js, D3, Plotly, SPAs) work out of the box.
+  Publish websites, dashboards, and documents to the web instantly. Create,
+  edit, review, and comment on HTML pages via the HTML Docs API and CLI. Use
+  when asked to "publish this", "host this", "deploy this", "share this on
+  the web", "make a website", "put this online", "create a webpage",
+  "generate a URL", "build a dashboard", to review or comment on a doc, or
+  when given an html-docs.com link to work with. Published pages with inline
+  JavaScript (Chart.js, D3, Plotly, SPAs) work out of the box.
 globs:
   - "**/*.html"
   - "**/*.htm"
   - "**/*.md"
 ---
 
-# html-docs
+# HTML Docs — Instant Web Publishing
 
-**Skill version: 0.1.0**
+Publish websites, dashboards, reports, and documents to a live URL in one
+command. Create, edit, review, and comment on pages at html-docs.com.
 
-html-docs.com lets agents publish websites, dashboards, and documents to live
-URLs instantly. One API call, one URL, done.
+## Quick start — CLI
 
-## What you can publish
+Install nothing. One command to publish:
 
-- HTML documents and reports
-- Interactive dashboards with Chart.js, D3, Plotly, or any client-side JS
-- Single-page applications (SPAs)
-- Static sites (HTML + CSS + JS + images)
-- Markdown documents (auto-converted to HTML)
-- Any content an agent generates
+    npx @html-docs/cli publish page.html
+    # → https://www.html-docs.com/site/<slug>
 
-**Inline `<script>` tags are preserved.** This is the key difference from most
-doc platforms — your JavaScript survives the publish pipeline, so dashboards
-and interactive content actually work.
+Custom slug:
 
-## Quick publish
+    npx @html-docs/cli publish page.html --slug my-dashboard
+    # → https://www.html-docs.com/site/my-dashboard
 
-The fastest path — one curl, one URL:
+Publish an entire directory (bundles into one page):
 
-```bash
-curl -X POST https://www.html-docs.com/api/v1/docs \
-  -H 'Content-Type: text/html' \
-  --data-binary @page.html
-```
+    npx @html-docs/cli publish ./site/ --slug my-app
 
-Response:
+Update an existing page:
 
-```json
-{
-  "id": "doc-uuid",
-  "url": "https://www.html-docs.com/site/page-a7k2b9f1",
-  "slug": "page-a7k2b9f1",
-  "editUrl": "https://www.html-docs.com/s/ab12cd34?present=1",
-  "token": "ab12cd34"
-}
-```
+    npx @html-docs/cli update <id> page.html --token <token>
 
-- **`url`** — the hosted page (raw HTML, no editor chrome). Share this.
-- **`editUrl`** — the editor view for converting to a collaborative doc.
-- **`token`** — keep this for later updates.
+Authenticate for permanent pages tied to your account:
 
-## Using the publish script
+    npx @html-docs/cli auth
 
-If you have the skill installed locally:
+## Quick start — curl (no install)
 
-```bash
-./scripts/publish.sh page.html
-./scripts/publish.sh ./my-site/           # directory with index.html
-./scripts/publish.sh page.html --slug my-custom-slug
-```
+Publish any HTML file with a single copy-paste command:
 
-## Authentication
+    curl -sS -X POST https://www.html-docs.com/api/v1/docs \
+      -H 'Content-Type: text/html' --data-binary @page.html
 
-### Anonymous (zero friction)
+Returns a live URL instantly. Add a custom slug:
 
-No account needed. Just POST your HTML. The page is published immediately
-with an auto-generated slug. The `token` in the response lets you update it.
+    curl -sS -X POST https://www.html-docs.com/api/v1/docs \
+      -H 'Content-Type: text/html' \
+      -H 'X-Slug: my-dashboard' \
+      --data-binary @page.html
+    # → https://www.html-docs.com/site/my-dashboard
 
-### Authenticated (permanent, owned)
+No account, no API key, no dependencies.
 
-Send an agent API key to create permanent pages that appear in your dashboard:
+## MCP Server
 
-```bash
-curl -X POST https://www.html-docs.com/api/v1/docs \
-  -H 'Authorization: Bearer hdk_your_key_here' \
-  -H 'Content-Type: text/html' \
-  --data-binary @dashboard.html
-```
+For MCP-compatible clients (Claude Code, Cursor, Windsurf, Cline, Codex),
+configure the server in one command — no manual JSON editing:
 
-The slug is derived from the document title. Pass `?slug=custom-slug` or
-`X-Slug: custom-slug` header to choose your own.
+    npx @html-docs/cli install            # auto-detects installed clients
+    npx @html-docs/cli install claude-code
+    npx @html-docs/cli install cursor --api-key hdk_your_key
 
-### Getting an API key
+This writes the html-docs MCP server into the client's own config file
+(e.g. `~/.claude.json`, `~/.cursor/mcp.json`,
+`~/.codeium/windsurf/mcp_config.json`, or `~/.codex/config.toml`), preserving
+any servers already configured. Restart the client afterward to load the tools.
 
-1. Sign up at https://www.html-docs.com/auth/login
-2. Go to https://www.html-docs.com/settings/api-keys
-3. Create a key — it starts with `hdk_`
-4. Save it:
+To configure by hand instead, add this to your MCP config:
 
-```bash
-mkdir -p ~/.htmldocs && echo "hdk_your_key" > ~/.htmldocs/credentials && chmod 600 ~/.htmldocs/credentials
-```
+    {
+      "mcpServers": {
+        "html-docs": {
+          "command": "npx",
+          "args": ["-y", "@html-docs/cli", "--mcp"]
+        }
+      }
+    }
 
-Or set the environment variable:
+Available tools: publish, publish_file, update, read, comment, list_comments.
+Auth: pass api_key in tool args, set HTMLDOCS_API_KEY env var, or run
+`npx @html-docs/cli auth` to save credentials locally.
 
-```bash
-export HTMLDOCS_API_KEY=hdk_your_key
-```
+## 1. Create a document
 
-## API key storage
+Build a self-contained HTML page — all CSS inline, no external deps — then:
 
-The publish script reads the API key from (first match wins):
+    curl -sS -X POST https://www.html-docs.com/api/v1/docs \
+      -H 'Content-Type: text/html' --data-binary @doc.html
 
-1. `--api-key <key>` flag (CI only — avoid in interactive use)
-2. `$HTMLDOCS_API_KEY` environment variable
-3. `~/.htmldocs/credentials` file (recommended)
+Also accepts `Content-Type: text/markdown` or JSON `{"html":"…","title":"…"}`.
 
-**After receiving an API key, save it immediately.** Do not ask the user to
-do it manually.
+Response: `{ "id", "url", "token" }`. The `url` is the shareable link. Keep
+the `token` — it authorizes all subsequent operations on that doc.
 
-## Custom slugs
+## Make it beautiful — the design system
 
-Choose your own URL:
+Don't ship plain HTML. **Every substantial doc should look intentionally designed
+for its content.** Full design system (creative brief, anti-slop rules,
+archetypes, component patterns, inline-SVG diagrams, motion):
+**[references/design-system.md](references/design-system.md) — read it before
+authoring any non-trivial doc.** Essentials:
 
-```bash
-# Via query param
-curl -X POST 'https://www.html-docs.com/api/v1/docs?slug=my-dashboard' \
-  -H 'Content-Type: text/html' --data-binary @dashboard.html
+- **Answer the creative brief first:** purpose & audience · a metaphor (place/
+  object, not a format) · display + body typography · ONE dominant hue + accent ·
+  the one memorable signature · composition. The design flows from these.
+- **Anti-slop:** one dominant hue (not 5 balanced colors); backgrounds with
+  character (never flat stark white); hierarchy through dramatic scale; **lead
+  with visuals, not walls of text**; at most one CSS entrance; each doc differs
+  from the last.
+- **Pick an archetype** for layout DNA: report, dashboard, comparison,
+  architecture/flow, timeline/roadmap, graph, guide/FAQ, session-summary.
+- **Self-contained only:** inline CSS + inline `<svg>`; **no external CDNs/JS, no
+  charting libraries** — hand-author charts/diagrams as inline SVG or styled
+  HTML/CSS so they render in the shadow-DOM viewer and on mobile. Color-code
+  consistently (one color per component/layer + legend), label every box and
+  arrow, and prefer a few precise diagrams over one busy one.
 
-# Via header
-curl -X POST https://www.html-docs.com/api/v1/docs \
-  -H 'X-Slug: my-dashboard' \
-  -H 'Content-Type: text/html' --data-binary @dashboard.html
-```
+## 2. Publish as a live website
+
+One POST gives you a hosted page — raw HTML served directly, no editor chrome:
+
+    curl -sS -X POST https://www.html-docs.com/api/v1/docs \
+      -H 'Content-Type: text/html' \
+      -H 'X-Slug: my-dashboard' \
+      --data-binary @page.html
+
+Instantly live at `https://www.html-docs.com/site/my-dashboard`.
+Omit `X-Slug` for an auto-generated slug.
+
+Use cases: dashboards, landing pages, interactive tools, reports, portfolios —
+anything that's a self-contained HTML page.
 
 Slug rules: 3-60 chars, lowercase letters/digits/hyphens, must start and end
 with a letter or digit. If the slug is taken, a random suffix is appended.
 
-## Updating an existing page
+Update a published site:
 
-Use PUT with the document ID and token:
+    curl -sS -X PUT https://www.html-docs.com/api/v1/docs/<id> \
+      -H 'Content-Type: text/html' \
+      -H 'x-doc-token: <token>' \
+      --data-binary @updated.html
 
-```bash
-curl -X PUT https://www.html-docs.com/api/v1/docs/<id> \
-  -H 'x-doc-token: <token>' \
-  -H 'Content-Type: text/html' \
-  --data-binary @updated-page.html
-```
+Returns `{ id, url, siteUrl, slug }`. The hosted page updates instantly.
 
-Or with an agent key (no token needed):
+**CORS proxy** — hosted pages that fetch external APIs can route through:
 
-```bash
-curl -X PUT https://www.html-docs.com/api/v1/docs/<id> \
-  -H 'Authorization: Bearer hdk_...' \
-  -H 'Content-Type: text/html' \
-  --data-binary @updated-page.html
-```
+    GET https://www.html-docs.com/api/proxy?url=<encoded-target-url>
 
-## Converting to an editable document
+GET-only, 100 req/min, 10 MB max, 10 s timeout.
 
-Every published page can be converted to a full html-docs collaborative
-document. The `editUrl` in the response opens the editor view with:
+## 3. Read a document
 
-- **Real-time collaboration** (Liveblocks)
-- **Region-based editing** — each block is independently editable
-- **Inline comments** anchored to specific text
-- **Version history** — every change is snapshotted
-- **Review workflows** — agents and humans review each other's work
+From a link: `/d/<id>?token=<token>` or `/s/<code>` (code is the token; get
+the id with `curl -s "<link>" | grep -oE '/api/og/[0-9a-f-]{36}' | head -1`).
 
-This is the moat: publish a dashboard → share the hosted URL → convert to
-editable doc → collaborate with humans → keep iterating. No other platform
-does this.
+Authenticate with either `x-doc-token: <token>` or `Authorization: Bearer <key>`:
 
-## Beyond hosting: the collaboration API
+    curl -s https://www.html-docs.com/api/v1/docs/<id> \
+      -H 'x-doc-token: <token>'
 
-Once published, agents can also:
+Returns `{ title, html_content, regions, visibility, updated_at }`.
+`regions` is a list of `{ region_key, content }` — each is an independently
+editable block of the document.
 
-- **Read regions**: `GET /api/v1/docs/<id>/regions/<key>`
-- **Edit regions**: `PATCH /api/v1/docs/<id>/regions/<key>`
-- **Comment**: `POST /api/v1/docs/<id>/comments`
-- **Track versions**: `GET /api/v1/docs/<id>/versions`
-- **Watch for changes**: `POST /api/v1/webhooks`
+## 4. Edit a document
 
-Full API reference: https://www.html-docs.com/developers
+**Edit one region** (preserves comment anchors — preferred):
 
-## What to tell the user
+    curl -s -X PATCH https://www.html-docs.com/api/v1/docs/<id>/regions/<region_key> \
+      -H 'x-doc-token: <token>' \
+      -d '{"content":"<p>New HTML for this region</p>"}'
 
-After a successful publish:
+**Replace the entire document** (re-derives all regions, orphans comment anchors):
 
-1. Share the `url` — that's the hosted page at `/site/<slug>`
-2. Mention the `editUrl` — they can open it to edit, comment, or collaborate
-3. For authenticated publishes, tell them it's permanent and in their dashboard
-4. For anonymous publishes, note they can claim it by signing up
+    curl -s -X PUT https://www.html-docs.com/api/v1/docs/<id> \
+      -H 'x-doc-token: <token>' \
+      --data-binary @new.html
 
-## Content types
+## 5. Review and comment
 
-The API accepts:
+List existing comments:
 
-- `text/html` — raw HTML (recommended)
-- `text/markdown` — auto-converted to HTML
-- `application/json` — `{ "html": "...", "title": "..." }` or `{ "markdown": "..." }`
+    curl -s https://www.html-docs.com/api/v1/docs/<id>/comments \
+      -H 'x-doc-token: <token>'
+
+Add a comment:
+
+    curl -s -X POST https://www.html-docs.com/api/v1/docs/<id>/comments \
+      -H 'x-doc-token: <token>' \
+      -H 'x-agent-name: YourAgent' \
+      -d '{"content":"Your feedback","region_key":"region-abc","selected_text":"exact snippet"}'
+
+**Always include `selected_text`** — a short (2-8 word), exact, plain-text
+snippet from the region so the comment highlights visibly on the page.
+
+Reply to a comment thread:
+
+    -d '{"content":"Reply text","parent_id":"<comment-id>"}'
+
+Resolve/unresolve a thread:
+
+    curl -s -X POST .../comments/<id>/resolve \
+      -d '{"resolved": true}'
+
+Edit or delete your own comments:
+
+    curl -s -X PATCH .../comments/<id> -d '{"content":"Updated"}'
+    curl -s -X DELETE .../comments/<id>
+
+## 6. Version history
+
+    GET  /api/v1/docs/<id>/versions              — list versions
+    POST /api/v1/docs/<id>/versions               — capture {"name":"…"}
+    POST /api/v1/docs/<id>/versions/<vid>/restore  — roll back
+
+Every edit auto-snapshots the prior state.
+
+## Authentication
+
+Two auth methods:
+- **Doc token**: `x-doc-token: <token>` — scoped to one document
+- **API key**: `Authorization: Bearer <key>` — works on all docs you own; get one at html-docs.com → API keys
+
+### Saving an API key
+
+1. Sign up at https://www.html-docs.com/auth/login
+2. Create a key at https://www.html-docs.com/settings/api-keys — it starts with `hdk_`
+3. Save it with `npx @html-docs/cli auth`, or set `export HTMLDOCS_API_KEY=hdk_your_key`,
+   or write it to `~/.htmldocs/credentials` (chmod 600).
+
+**After receiving an API key, save it immediately — don't ask the user to do it manually.**
 
 ## Limits
 
 - Max body size: 2 MB
 - Rate limits: 600 reads / 60 writes per 60-second window per credential
+
+## Full API reference
+
+    curl https://www.html-docs.com/api/v1
+
+Returns the live machine-readable contract with all endpoints. See also
+[references/api.md](references/api.md).
+
+| Method | Path | Purpose |
+|---|---|---|
+| POST | /api/v1/docs | Create a new doc |
+| GET | /api/v1/docs/:id | Read doc + regions |
+| PUT | /api/v1/docs/:id | Replace entire doc |
+| PATCH | /api/v1/docs/:id/regions/:key | Edit one region |
+| GET | /api/v1/docs/:id/comments | List comments |
+| POST | /api/v1/docs/:id/comments | Add comment |
+| PATCH | /api/v1/docs/:id/comments/:cid | Edit comment |
+| DELETE | /api/v1/docs/:id/comments/:cid | Delete comment |
+| POST | /api/v1/docs/:id/comments/:cid/resolve | Resolve thread |
+| GET | /api/v1/docs/:id/versions | List versions |
+| POST | /api/v1/docs/:id/versions | Capture version |
+| POST | /api/v1/docs/:id/versions/:vid/restore | Restore version |

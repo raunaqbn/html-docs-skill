@@ -4,6 +4,7 @@
  * html-docs CLI — instant web hosting for AI agents.
  *
  * Usage:
+ *   npx @html-docs/cli install [client]   Auto-configure MCP into your agent
  *   npx @html-docs/cli publish <file-or-dir> [--slug <slug>] [--api-key <key>]
  *   npx @html-docs/cli auth
  *   npx @html-docs/cli update <id> <file-or-dir> [--token <token>]
@@ -73,7 +74,7 @@ function httpRequest(method, urlStr, headers, body) {
 
 const MCP_SERVER_INFO = {
   name: 'html-docs',
-  version: '0.2.0',
+  version: '0.3.0',
 };
 
 const MCP_TOOLS = [
@@ -514,10 +515,226 @@ async function update() {
   }
 }
 
+// ── install: auto-configure the MCP server into agent clients ──────
+
+const MCP_ENTRY = { command: 'npx', args: ['-y', '@html-docs/cli', '--mcp'] };
+
+function homeDir() {
+  return process.env.HOME || process.env.USERPROFILE || '';
+}
+
+// Known agent clients and where their MCP config lives.
+function clientTargets() {
+  const home = homeDir();
+  return {
+    'claude-code': {
+      label: 'Claude Code',
+      kind: 'json',
+      file: path.join(home, '.claude.json'),
+      // also "installed" if the `claude` binary is on PATH
+      detectCmd: 'claude',
+    },
+    cursor: {
+      label: 'Cursor',
+      kind: 'json',
+      file: path.join(home, '.cursor', 'mcp.json'),
+      detectDir: path.join(home, '.cursor'),
+    },
+    windsurf: {
+      label: 'Windsurf',
+      kind: 'json',
+      file: path.join(home, '.codeium', 'windsurf', 'mcp_config.json'),
+      detectDir: path.join(home, '.codeium', 'windsurf'),
+    },
+    cline: {
+      label: 'Cline',
+      kind: 'json',
+      file: path.join(
+        home,
+        '.config',
+        'Code',
+        'User',
+        'globalStorage',
+        'saoudrizwan.claude-dev',
+        'settings',
+        'cline_mcp_settings.json'
+      ),
+      detectDir: path.join(
+        home,
+        '.config',
+        'Code',
+        'User',
+        'globalStorage',
+        'saoudrizwan.claude-dev'
+      ),
+    },
+    codex: {
+      label: 'Codex',
+      kind: 'toml',
+      file: path.join(home, '.codex', 'config.toml'),
+      detectDir: path.join(home, '.codex'),
+      detectCmd: 'codex',
+    },
+  };
+}
+
+function onPath(bin) {
+  if (!bin) return false;
+  try {
+    execSync(`command -v ${bin}`, { stdio: 'ignore' });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function isClientPresent(t) {
+  if (t.detectCmd && onPath(t.detectCmd)) return true;
+  if (t.file && fs.existsSync(t.file)) return true;
+  if (t.detectDir && fs.existsSync(t.detectDir)) return true;
+  return false;
+}
+
+// Merge our server into a JSON MCP config, preserving everything else.
+function installJson(t, apiKey) {
+  let config = {};
+  if (fs.existsSync(t.file)) {
+    const raw = fs.readFileSync(t.file, 'utf8').trim();
+    if (raw) {
+      try {
+        config = JSON.parse(raw);
+      } catch {
+        die(`could not parse existing config at ${t.file} (invalid JSON) — fix or remove it, then retry`);
+      }
+    }
+  }
+  if (!config.mcpServers || typeof config.mcpServers !== 'object') {
+    config.mcpServers = {};
+  }
+  const existed = Boolean(config.mcpServers['html-docs']);
+  const entry = { ...MCP_ENTRY };
+  if (apiKey) entry.env = { HTMLDOCS_API_KEY: apiKey };
+  config.mcpServers['html-docs'] = entry;
+
+  fs.mkdirSync(path.dirname(t.file), { recursive: true });
+  fs.writeFileSync(t.file, JSON.stringify(config, null, 2) + '\n');
+  return existed ? 'updated' : 'added';
+}
+
+// Append/replace a [mcp_servers.html-docs] block in a TOML config.
+function installToml(t, apiKey) {
+  let text = '';
+  if (fs.existsSync(t.file)) text = fs.readFileSync(t.file, 'utf8');
+
+  const lines = [];
+  lines.push('[mcp_servers.html-docs]');
+  lines.push('command = "npx"');
+  lines.push('args = ["-y", "@html-docs/cli", "--mcp"]');
+  if (apiKey) {
+    lines.push('');
+    lines.push('[mcp_servers.html-docs.env]');
+    lines.push(`HTMLDOCS_API_KEY = "${apiKey}"`);
+  }
+  const block = lines.join('\n');
+
+  const header = '[mcp_servers.html-docs]';
+  let existed = false;
+  if (text.includes(header)) {
+    existed = true;
+    // Replace the existing block: from its header up to the next top-level
+    // [section] header (one that is not a sub-table of html-docs) or EOF.
+    const allLines = text.split('\n');
+    const out = [];
+    let skipping = false;
+    for (const line of allLines) {
+      const trimmed = line.trim();
+      if (trimmed === header || trimmed.startsWith('[mcp_servers.html-docs.')) {
+        skipping = true;
+        continue;
+      }
+      if (skipping && /^\[/.test(trimmed) && !trimmed.startsWith('[mcp_servers.html-docs')) {
+        skipping = false;
+      }
+      if (!skipping) out.push(line);
+    }
+    text = out.join('\n').replace(/\n{3,}/g, '\n\n').trimEnd() + '\n';
+  }
+
+  fs.mkdirSync(path.dirname(t.file), { recursive: true });
+  const sep = text && !text.endsWith('\n') ? '\n\n' : text ? '\n' : '';
+  fs.writeFileSync(t.file, text + sep + block + '\n');
+  return existed ? 'updated' : 'added';
+}
+
+async function install() {
+  const targets = clientTargets();
+
+  // Parse args: optional client name(s) + flags.
+  let apiKey = '';
+  const requested = [];
+  for (let i = 0; i < args.length; i++) {
+    if (args[i] === '--api-key' && args[i + 1]) { apiKey = args[++i]; }
+    else if (args[i] === '--all') { requested.push('--all'); }
+    else if (!args[i].startsWith('--')) { requested.push(args[i].toLowerCase()); }
+  }
+  if (!apiKey) apiKey = getApiKey() || '';
+
+  // Aliases so "claude" → "claude-code".
+  const alias = { claude: 'claude-code', 'claude-code': 'claude-code', windsurf: 'windsurf', cursor: 'cursor', cline: 'cline', codex: 'codex' };
+
+  let chosen;
+  const explicit = requested.filter(r => r !== '--all');
+  if (explicit.length) {
+    chosen = [];
+    for (const r of explicit) {
+      const key = alias[r];
+      if (!key || !targets[key]) die(`unknown client: ${r}\nsupported: claude-code, cursor, windsurf, cline, codex`);
+      chosen.push(key);
+    }
+  } else {
+    // No client named: auto-detect installed ones.
+    chosen = Object.keys(targets).filter(k => isClientPresent(targets[k]));
+    if (!chosen.length) {
+      console.error('No supported agent clients detected on this machine.');
+      console.error('Install for a specific one with, e.g.:');
+      console.error('  npx @html-docs/cli install claude-code');
+      console.error('  npx @html-docs/cli install cursor');
+      console.error('Supported: claude-code, cursor, windsurf, cline, codex');
+      process.exit(1);
+    }
+    console.error(`Detected: ${chosen.map(k => targets[k].label).join(', ')}\n`);
+  }
+
+  for (const key of chosen) {
+    const t = targets[key];
+    try {
+      const result = t.kind === 'toml' ? installToml(t, apiKey) : installJson(t, apiKey);
+      console.error(`✓ ${t.label}: html-docs MCP server ${result}`);
+      console.error(`  ${t.file}`);
+    } catch (err) {
+      console.error(`✗ ${t.label}: ${err.message}`);
+    }
+  }
+
+  console.error('');
+  if (apiKey) {
+    console.error('API key wired in — your published pages will be permanent and owned by your account.');
+  } else {
+    console.error('No API key set, so publishes will be anonymous. To publish permanent, owned pages:');
+    console.error('  npx @html-docs/cli auth      (then re-run install to bake the key in)');
+  }
+  console.error('Restart your agent client to load the new tools.');
+}
+
 function showHelp() {
   console.log(`html-docs — instant web hosting for AI agents
 
 Usage:
+  html-docs install [client]         Auto-configure the MCP server into your agent
+    [client]                         claude-code | cursor | windsurf | cline | codex
+                                     (omit to auto-detect installed clients)
+    --api-key <key>                  Bake an API key in (or set $HTMLDOCS_API_KEY)
+
   html-docs publish <file-or-dir>    Publish to a live URL
     --slug <slug>                    Custom slug for the URL
     --api-key <key>                  API key (or set $HTMLDOCS_API_KEY)
@@ -533,11 +750,12 @@ Usage:
   html-docs --mcp                    Start MCP server (JSON-RPC over stdio)
 
 Examples:
+  npx @html-docs/cli install                     # detect & configure your agent
+  npx @html-docs/cli install claude-code
   npx @html-docs/cli publish page.html
   npx @html-docs/cli publish ./site/ --slug my-dashboard
   npx @html-docs/cli auth
   npx @html-docs/cli update abc-123 page.html --token xyz
-  npx @html-docs/cli --mcp
 
 Docs: https://www.html-docs.com/developers
 `);
@@ -554,6 +772,9 @@ switch (command) {
     break;
   case 'update':
     update().catch(e => die(e.message));
+    break;
+  case 'install':
+    install().catch(e => die(e.message));
     break;
   case 'help':
   case '--help':
