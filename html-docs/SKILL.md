@@ -144,6 +144,10 @@ what you're doing:
 - **[references/effects.md](references/effects.md)** — the finishing layer:
   CSS-only backgrounds, texture, depth, motion, and signature marks, with
   copy-paste recipes by mood.
+- **[references/pdf.md](references/pdf.md)** — the PDF round-trip: turn a source
+  PDF into a *designed* doc (read → recover structure → re-author, not OCR
+  reflow), and export any doc to a well-paginated PDF (`/pdf` endpoint, print
+  CSS, page-break hooks, `?html=1` for Prince/WeasyPrint).
 
 A good default flow: read design-system.md, author from the creative brief,
 then `audit` against anti-slop.md and `polish` before you publish.
@@ -248,6 +252,55 @@ Edit or delete your own comments:
 
 Every edit auto-snapshots the prior state.
 
+## 7. Convert a PDF, and export a polished PDF
+
+Full guide: **[references/pdf.md](references/pdf.md)**. The PDF round-trip has
+two directions — both aim for a *designed* document, never a flat reflow.
+
+**PDF in → designed doc.** You can read a PDF directly. Don't dump its text into
+`<p>` tags or screenshot its pages — *re-author* it: recover the heading
+hierarchy, tables, and figures, pick an archetype (design-system.md), redraw
+bitmap diagrams as inline SVG where feasible, and design for the content.
+Preserve every fact, number, link, and table; invent nothing. Then publish.
+(Reproduce documents of record — contracts, filings — faithfully instead.)
+
+**Doc → PDF out.** Export any hosted doc:
+
+    GET /api/v1/docs/:id/pdf        # ?format=letter|a4|legal, ?landscape=1, ?html=1
+
+Rendered with headless Chromium for full visual fidelity. `?html=1` returns the
+print-ready HTML so you can run your own engine (WeasyPrint, Prince) for
+book-grade paged media.
+
+**For a great PDF, author a print edition — don't just print the screen doc.**
+The on-screen document and the PDF want different things. The highest-quality
+path is to **transform the doc into a second HTML rendition authored for the
+page** and export *that*:
+
+- A real **cover/title block** sized to ~one page, not a full-bleed scroll hero.
+- A **print type scale** (slightly smaller body, tighter leading) and ink-on-
+  paper contrast instead of screen tints.
+- **Sections that begin on fresh pages** where it aids reading (chapter starts),
+  using the page-break hooks below.
+- **Figures and tables fitted to the page box** (`max-width: 100%`, repeating
+  table headers), and on-screen-only chrome dropped.
+- No motion, no hover states, nothing that only makes sense scrolling.
+
+Think of it as two outputs from one source: the screen edition (live, interactive)
+and the print edition (paginated, typeset for paper). The export injects a print
+stylesheet as a safety net — orphan/widow control, `break-inside: avoid` on
+figures/tables/code, repeating `thead`, color-accurate backgrounds — but a
+purpose-built print edition is what makes a PDF look *intentionally typeset*.
+
+**Page-break hooks** honored on export (use deliberately):
+
+| Hook | Effect |
+|---|---|
+| `page-break-before` / `data-page-break="before"` | new page before element |
+| `page-break-after` / `data-page-break="after"` | break page after element |
+| `page-break-avoid` / `data-keep-together` | keep element whole on one page |
+| `no-print` / `screen-only` / `data-print-hide` | hide element in the PDF |
+
 ## Authentication
 
 Two auth methods:
@@ -289,3 +342,4 @@ Returns the live machine-readable contract with all endpoints. See also
 | GET | /api/v1/docs/:id/versions | List versions |
 | POST | /api/v1/docs/:id/versions | Capture version |
 | POST | /api/v1/docs/:id/versions/:vid/restore | Restore version |
+| GET | /api/v1/docs/:id/pdf | Export as PDF (`?format=`, `?landscape=1`, `?html=1`) |
