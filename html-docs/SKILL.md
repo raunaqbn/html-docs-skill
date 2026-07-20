@@ -81,7 +81,8 @@ To configure by hand instead, add this to your MCP config:
     }
 
 Available tools: publish, publish_file, update, read, comment, list_comments,
-generate_video.
+generate_video. For `generate_video`, the agent must author a local composition
+file first; the MCP tool does not invoke a second hosted model.
 Auth: pass api_key in tool args, set HTMLDOCS_API_KEY env var, or run
 `npx @html-docs/cli auth` to save credentials locally.
 
@@ -183,32 +184,38 @@ GET-only, 100 req/min, 10 MB max, 10 s timeout.
 
 ## 3. Generate and embed an HTML video
 
-Use this when motion materially improves an owned document. HTML Docs asks the
-configured model to author deterministic, seek-driven HTML/CSS/JavaScript,
-validates repeated-frame output, renders it with Chromium and FFmpeg, uploads
-the MP4 and poster, and inserts a `<video>` block.
+Use this when motion materially improves an owned document. **Read
+[references/html-video.md](references/html-video.md) before authoring.** The
+current Codex or Claude session writes deterministic, seek-driven
+HTML/CSS/JavaScript. Local Chromium and FFmpeg validate and render it; HTML Docs
+only provides signed upload targets and inserts the completed `<video>` block.
+There is no separate hosted authoring model and no Vercel media renderer.
 
 This operation requires an account API key and document ownership. Publish with
-authentication first, retain the returned document `id`, then run:
+authentication first, retain the returned document `id`, author
+`composition.json`, then resolve this skill's root directory and run:
 
-    npx @html-docs/cli video <id> \
+    <skill-root>/scripts/video.sh check composition.json
+    <skill-root>/scripts/video.sh snapshot composition.json --at 0,4000,7999
+    <skill-root>/scripts/video.sh publish composition.json \
+      --document <id> \
       --prompt "Animate the three key ideas as a calm editorial explainer" \
-      --aspect landscape --duration 8
+      --provider codex --quality standard
 
-Or call the API directly:
+The packaged CLI is an equivalent convenience wrapper once the renderer package
+is released:
 
-    curl -sS -X POST https://www.html-docs.com/api/v1/docs/<id>/videos \
-      -H "Authorization: Bearer $HTMLDOCS_API_KEY" \
-      -H 'Content-Type: application/json' \
-      -d '{"prompt":"Animate the three key ideas","duration_seconds":8}'
+    npx @html-docs/cli video <id> composition.json \
+      --prompt "Animate the three key ideas" --provider claude
 
-Optional fields: `title`, `after_region_key`, `aspect_ratio` (`landscape`,
-`portrait`, `square`), `duration_seconds` (3–15), and `quality` (`draft`,
-`standard`, `high`). The response includes `video_url`, `poster_url`,
-`composition_id`, `render_id`, and `inserted_region_key`.
+Optional flags: `--title`, `--after`, `--quality` (`draft`, `standard`,
+`high`), `--model`, `--output`, `--api-key`, and `--base-url`. Canvas size and
+duration live in the composition itself. The response includes `video_url`,
+`poster_url`, `compositionId`, and `inserted_region_key`.
 
-Treat this as a long-running request. Do not retry while the first call is still
-running. On success, share the video URL and the existing document URL.
+Do not manually call the prepare endpoint without completing the signed uploads;
+the renderer wrapper owns that two-step protocol. On success, verify the video
+region and share the existing document URL.
 
 ## 4. Read a document
 
@@ -368,4 +375,5 @@ Returns the live machine-readable contract with all endpoints. See also
 | POST | /api/v1/docs/:id/versions | Capture version |
 | POST | /api/v1/docs/:id/versions/:vid/restore | Restore version |
 | GET | /api/v1/docs/:id/pdf | Export as PDF (`?format=`, `?landscape=1`, `?html=1`) |
-| POST | /api/v1/docs/:id/videos | Generate, render, and embed an HTML video (owner key required) |
+| POST | /api/v1/docs/:id/videos | Register a locally authored composition and obtain one-use upload tokens (owner key required) |
+| POST | /api/v1/docs/:id/videos/:compositionId/complete | Verify local uploads and insert the `<video>` block |

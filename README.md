@@ -1,6 +1,6 @@
 # html-docs
 
-**HTML publishing and generated video for AI agents.** Publish sites, dashboards, and documents to [html-docs.com](https://www.html-docs.com), then generate deterministic HTML motion and embed the rendered MP4.
+**HTML publishing and local HTML-video generation for AI agents.** Publish sites, dashboards, and documents to [html-docs.com](https://www.html-docs.com), then let the current Codex or Claude session author deterministic HTML motion, render it locally, and embed the MP4.
 
 ```
 npx @html-docs/cli publish dashboard.html
@@ -66,10 +66,13 @@ npx skills add raunaqbn/html-docs-skill --skill html-docs -g
 Or manually:
 
 ```bash
-mkdir -p ~/.claude/skills/html-docs
-curl -fsSL https://raw.githubusercontent.com/raunaqbn/html-docs-skill/main/html-docs/SKILL.md \
-  -o ~/.claude/skills/html-docs/SKILL.md
+git clone https://github.com/raunaqbn/html-docs-skill.git /tmp/html-docs-skill
+mkdir -p ~/.claude/skills
+cp -R /tmp/html-docs-skill/html-docs ~/.claude/skills/html-docs
 ```
+
+Copy the whole `html-docs` directory, not only `SKILL.md`; generated video
+support also uses `references/html-video.md` and `scripts/video.sh`.
 
 ## Usage
 
@@ -105,13 +108,18 @@ npx @html-docs/cli update <doc-id> page.html --token <token>
 
 ### Generate and embed a video
 
-Requires an authenticated document owned by the API-key account:
+Requires an authenticated document owned by the API-key account. The agent
+authors `composition.json`; Chromium and FFmpeg run locally:
 
 ```bash
-npx @html-docs/cli video <doc-id> \
+npx @html-docs/cli video <doc-id> composition.json \
   --prompt "Animate the three most important ideas" \
-  --aspect landscape --duration 8
+  --provider codex --quality standard
 ```
+
+When using the installed skill directly, its `scripts/video.sh` wrapper prefers
+a local HTML Docs checkout (including `~/projects/html-docs`) and falls back to
+`@html-docs/html-video` once that renderer package is published.
 
 ### Direct curl (no install needed)
 
@@ -164,7 +172,7 @@ When running as an MCP server (`--mcp`), the following tools are available:
 | `read` | Read a document's content and regions |
 | `comment` | Add a comment anchored to specific text |
 | `list_comments` | List all comments on a document |
-| `generate_video` | Generate, render, and insert an HTML-authored video |
+| `generate_video` | Render an agent-authored local composition, upload it, and insert the video |
 
 ## API docs
 
