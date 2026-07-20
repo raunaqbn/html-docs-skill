@@ -1,102 +1,247 @@
-# Deterministic HTML video
+# HTML-authored explainer video
 
-Use this reference when an HTML Docs document needs a generated video. The
-current Codex or Claude session is the author. Chromium and FFmpeg run locally;
-HTML Docs only validates metadata, issues one-use storage upload tokens, and
-inserts the completed `<video>` block.
+Use this reference whenever an HTML Docs document needs a generated video. The
+current Codex or Claude session is the writer, director, designer, and scene
+author. The open-source HTML Video package is the deterministic production
+engine: it compiles scene modules, freezes local assets, seeks Chromium to each
+frame, and encodes with FFmpeg. HTML Docs only stores the composition and
+inserts the uploaded MP4 into the owned document.
 
-## Composition contract
+## The quality contract
 
-Author one JSON file with this shape:
+A final explainer is a short film, not a web page with a fade. It must have:
+
+- A teaching spine: hook → orientation → 3–6 cumulative ideas → landing.
+- One job per scene and at least three distinct framing systems across a video.
+- A designed explanatory visual in every body scene: diagram, process, map,
+  data-viz, type-as-subject, or a frozen asset with visual treatment.
+- Sequential development across each scene. Do not reveal the finished canvas
+  in its first quarter and hold it under the rest of the voiceover.
+- Exact narration ownership. Every spoken word or phrase belongs to one cue,
+  one scene, and one or more unique visual target IDs.
+- A clean static read at every sampled timestamp, deterministic seeking, and a
+  passing visual audit whose contact sheet has been inspected.
+
+## Required project shape
+
+For anything beyond a tiny silent loop, author a project directory:
+
+```text
+video-project/
+  BRIEF.md                  audience, thesis, length, format, voice choice
+  SCRIPT.md                 locked narration, one section per scene
+  STORYBOARD.md             one scene job + time-coded cue plan per scene
+  design.md                 palette, type roles, layout and motion grammar
+  video.project.json        compiler manifest
+  audio/
+    voiceover.wav           final measured narration
+    words.json              exact word timings when available
+  assets/                   frozen local images, fonts, icons, or footage
+  scenes/
+    01-hook.html
+    01-hook.css
+    01-hook.js
+    02-*.html / .css / .js
+  quality/                  generated report, snapshots, contact sheet
+  composition.json          generated; do not hand-edit
+```
+
+The renderer also accepts the legacy single-file composition JSON, but that
+format is for very short motion snippets. Do not use it for a narrated
+multi-scene explainer.
+
+## Narration is the timing authority
+
+This is load-bearing. A visually attractive scene is still wrong if the voice
+is discussing the next idea.
+
+1. Lock `SCRIPT.md` before scene implementation. Each spoken line is assigned
+   to exactly one storyboard scene.
+2. Generate or record the final voiceover before final scene timing. Never
+   stretch a storyboard estimate to fit it.
+3. Obtain exact word timings. Prefer provider-native timestamps. Otherwise run
+   a local aligner/transcriber such as Whisper/WhisperX against the final audio.
+4. Split each scene's narration into short, ordered cue phrases. The cue texts,
+   concatenated, must equal that scene's narration exactly—no paraphrases,
+   dropped words, or duplicated words.
+5. Give every cue one or more unique ID selectors for the visual elements it
+   owns. A target must live in the same scene as the cue.
+6. Reveal or emphasize the target during the cue that names it. It must not be
+   fully visible in an earlier scene merely because it was convenient to build
+   the final layout up front.
+7. Run `check`. The compiler rejects mismatched cue text, uncovered timed words,
+   cue overlap, cues outside their scene, missing target IDs, and audio/video
+   duration drift.
+
+Word timing file shape:
 
 ```json
 {
-  "version": 1,
-  "id": "concise-lowercase-id",
-  "title": "Human-readable title",
-  "width": 1280,
-  "height": 720,
-  "fps": 30,
-  "durationMs": 8000,
-  "html": "<section class=\"scene\"><h1>Ideas in motion.</h1></section>",
-  "css": ".scene{position:absolute;inset:0} ...",
-  "script": "window.__HTML_VIDEO__={renderFrame:function(ctx){...}};",
-  "variables": [],
-  "assets": [],
-  "scenes": [
-    { "id": "scene-1", "label": "Opening", "startMs": 0, "durationMs": 8000, "track": 0 }
+  "words": [
+    { "text": "First", "startMs": 240, "endMs": 510 },
+    { "text": "protect", "startMs": 540, "endMs": 910 }
   ]
 }
 ```
 
-Recommended canvases: landscape `1280x720`, portrait `720x1280`, square
-`1080x1080`. Use 30 fps and normally 3–15 seconds. Scene intervals on the same
-track must not overlap or extend beyond `durationMs`.
+`start`/`end` in seconds are also accepted. If no word timing file exists, every
+cue must provide explicit `startMs` and `endMs` measured from the final audio.
+Estimated timestamps are not acceptable for a final.
 
-The script must synchronously assign:
+## Project manifest
 
-```js
-window.__HTML_VIDEO__ = {
-  renderFrame({ root, timeMs, progress, variables, width, height, durationMs, fps }) {
-    // Set every render-critical property from timeMs.
-  }
+```json
+{
+  "kind": "html-video-project",
+  "version": 1,
+  "id": "how-treatment-works",
+  "title": "How the treatment works",
+  "width": 1280,
+  "height": 720,
+  "fps": 30,
+  "globalCss": "global.css",
+  "voiceover": {
+    "audio": "audio/voiceover.wav",
+    "timings": "audio/words.json"
+  },
+  "assets": [
+    { "id": "scan", "kind": "image", "src": "assets/scan.png" },
+    { "id": "display", "kind": "font", "src": "assets/display.woff2" }
+  ],
+  "scenes": [
+    {
+      "id": "baseline",
+      "label": "Baseline checks",
+      "layout": "split",
+      "html": "scenes/02-baseline.html",
+      "css": "scenes/02-baseline.css",
+      "script": "scenes/02-baseline.js",
+      "transition": "push-left",
+      "narration": "The scan maps the disease. The heart test clears the planned treatment.",
+      "cues": [
+        {
+          "id": "scan-map",
+          "text": "The scan maps the disease.",
+          "targets": ["#baseline-scan"],
+          "effect": "wipe"
+        },
+        {
+          "id": "heart-clearance",
+          "text": "The heart test clears the planned treatment.",
+          "targets": ["#baseline-heart", "#baseline-check"],
+          "effect": "scale"
+        }
+      ]
+    }
+  ]
 }
 ```
 
-`renderFrame` must be seek-safe: rendering timestamp T twice, or after seeking
-there from different timestamps, must produce identical pixels. Derive all
-motion from `timeMs`; never increment state from the previous frame.
+Allowed layouts: `centered`, `asymmetric`, `split`, `diagram`, `timeline`,
+`triptych`, `layered`, `full-width`. Do not repeat one on adjacent scenes unless
+the repeated stage is narratively intentional.
 
-Available helpers live on `window.HtmlVideoRuntime`: `clamp`, `lerp`,
-`mapRange`, `sceneProgress`, `staggerProgress`, `seededRandom`, and `ease`.
+Allowed automatic cue effects: `fade`, `rise`, `scale`, `wipe`, `draw`, `none`.
+Use `none` when the scene script controls the target's cue response itself.
+Automatic effects are safe defaults, not a reason to give every scene the same
+motion.
+
+## Scene module contract
+
+Scene HTML is a fragment, not a document. Do not include `<html>`, `<style>`,
+`<script>`, network resources, audio, video, forms, iframes, or event-handler
+attributes. Use unique element IDs across the whole project; cue targets must be
+ID selectors.
+
+Scene CSS must be scoped beneath `#hv-scene-<scene-id>` or use globally unique
+class names. Do not use `transition`, `animation`, or `@keyframes` for
+render-critical motion. Use `asset:<id>` in `src` or `url()`; build embeds the
+declared local file as a data URL.
+
+Each scene JS file is the body of a deterministic render function. It receives:
+
+```js
+// Available bindings in every scene module:
+// root       scene root element
+// timeMs     time inside this scene
+// progress   0..1 scene progress
+// cue(id)    exact 0..1 progress for one narration cue
+// phase(t,a,b), h (HtmlVideoRuntime helpers), variables
+
+var reveal = h.ease.outCubic(cue('heart-clearance'))
+root.querySelector('#ef-number').textContent = h.countTo(60, reveal, 0) + '%'
+h.drawPath(root.querySelector('#scan-outline'), cue('scan-map'))
+```
+
+Derive every render-critical property from `timeMs`, `progress`, or `cue(id)`.
+Never increment from the prior frame.
+
+Available helpers include `clamp`, `lerp`, `mapRange`, `sceneProgress`, `phase`,
+`staggerProgress`, `seededRandom`, `smoothstep`, `enterExit`, `setTransform`,
+`drawPath`, `countTo`, and ease functions. Prefer `outCubic`, `outExpo`, or the
+critically damped `spring`; `outBack` is a rare playful exception, not a house
+style.
 
 ## Hard safety and determinism rules
 
-- No `Date`, `performance.now`, `Math.random`, timers, `requestAnimationFrame`,
-  fetch/network calls, workers, storage, dynamic imports, `eval`, or `Function`.
-- No `<script>`, iframe, form, link, base, object, or embed markup in `html`.
-- No remote URLs or external dependencies. Prefer HTML/CSS shapes and inline
-  SVG. Keep `assets` empty unless a frozen local-asset workflow is added.
-- No CSS transitions or `@keyframes` for render-critical motion. The local
-  renderer seeks by calling `renderFrame`, not by playing a wall clock.
-- Keep text concise, readable, and grounded in the document. Do not invent
-  facts or statistics.
-- Build a strong static composition first, then add purposeful motion. Every
-  frame must stay inside the canvas and remain legible at the target aspect.
+- No `Date`, wall-clock reads, `Math.random`, timers, `requestAnimationFrame`,
+  fetch/network calls, workers, storage, dynamic import, `eval`, or `Function`.
+- No remote URLs or runtime dependencies. Freeze media locally first.
+- No CSS self-playing motion. The renderer seeks to an exact timestamp.
+- No conflicting transforms on the same element. Put cue motion on a wrapper
+  and scene-specific internal motion on a child.
+- No invented facts or statistics. Ground all visible content in the source
+  document; label illustrative charts as illustrative.
+- Important content stays clear of the bottom ~12–17% when captions are added.
+- A repeated seek to timestamp T must produce identical pixels.
 
-## Agent workflow
+## Production workflow
 
-1. Obtain the owned document ID and an account API key. Read the document via
-   `GET /api/v1/docs/:id` so the video reflects its real content and styling.
-2. Read this reference, choose a beat plan, and author `composition.json`.
-3. Resolve the installed skill root (the directory containing `SKILL.md`) and
-   run its local renderer wrapper:
+1. Read the owned document via `GET /api/v1/docs/:id` and extract the teaching
+   truth: audience, confusion, thesis, 3–6 mechanisms, evidence, landing.
+2. Write `BRIEF.md`, locked `SCRIPT.md`, `STORYBOARD.md`, and `design.md`.
+   For multi-scene explainers, apply `video-scene-craft.md`.
+3. Produce final voiceover and exact timings. Real audio duration wins.
+4. Author one scene module at a time. Each storyboard cue becomes a manifest
+   cue and one or more scene-owned target IDs.
+5. Build and validate:
 
    ```bash
-   <skill-root>/scripts/video.sh check composition.json
-   <skill-root>/scripts/video.sh snapshot composition.json --at 0,1500,7999
+   <skill-root>/scripts/video.sh build ./video-project
+   <skill-root>/scripts/video.sh check ./video-project
    ```
 
-4. Inspect the snapshots. Correct clipping, weak hierarchy, illegible copy, or
-   timing problems before rendering.
-5. Publish through the same wrapper:
+6. Run the visual audit:
 
    ```bash
-   <skill-root>/scripts/video.sh publish composition.json \
+   <skill-root>/scripts/video.sh audit ./video-project
+   ```
+
+   Inspect `quality/contact-sheet.png`, not just the score. Fix clipped type,
+   empty frames, repeated layouts, weak diagrams, early reveals, unreadable
+   labels, and any cue whose visual is not the phrase currently spoken. Re-run
+   until clean.
+
+7. Render a local final and watch it with sound from start to finish:
+
+   ```bash
+   <skill-root>/scripts/video.sh render ./video-project \
+     --output ./video-project/final.mp4
+   ```
+
+8. Publish and embed only after the watched final passes:
+
+   ```bash
+   <skill-root>/scripts/video.sh publish ./video-project \
      --document <document-id> \
-     --prompt "Animate the three most important ideas" \
-     --provider codex \
-     --quality standard
+     --prompt "Explain the document with cue-synced diagrams" \
+     --provider codex --quality high
    ```
 
-   Use `--provider claude` in Claude Code. Optional flags: `--title`, `--after`,
-   `--model`, `--output`, `--api-key`, and `--base-url`.
+The publish command repeats validation and the quality gate, renders, uploads
+the MP4/poster directly to storage, and calls the completion endpoint. Verify
+`video_url`, `poster_url`, and `inserted_region_key`.
 
-6. The command performs static validation, compares two same-time browser
-   captures for determinism, renders every frame, encodes H.264 MP4, uploads the
-   MP4/poster directly to storage, and calls the completion endpoint. Verify
-   `video_url`, `poster_url`, and `inserted_region_key` in its JSON response.
-
-The wrapper looks for `HTMLDOCS_VIDEO_REPO`, the current workspace, or
-`~/projects/html-docs`; otherwise it falls back to the published
+The wrapper uses `HTMLDOCS_VIDEO_REPO`, the current workspace, or
+`~/projects/html-docs`; otherwise it runs the published
 `@html-docs/html-video` package.

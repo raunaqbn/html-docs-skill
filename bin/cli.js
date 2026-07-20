@@ -8,7 +8,7 @@
  *   npx @html-docs/cli publish <file-or-dir> [--slug <slug>] [--api-key <key>]
  *   npx @html-docs/cli auth
  *   npx @html-docs/cli update <id> <file-or-dir> [--token <token>]
- *   npx @html-docs/cli video <id> <composition.json> --prompt <brief>
+ *   npx @html-docs/cli video <id> <project-dir-or-composition.json> --prompt <brief>
  *   npx @html-docs/cli --mcp    Start MCP (Model Context Protocol) server
  */
 
@@ -167,12 +167,12 @@ const MCP_TOOLS = [
   },
   {
     name: 'generate_video',
-    description: 'Validate and render an agent-authored HTML-video composition locally, upload it directly, and insert it into an owned document. The calling agent must author composition_path first.',
+    description: 'Compile, audit, and render an agent-authored modular HTML-video project locally, upload it directly, and insert it into an owned document. The calling agent must author the project first.',
     inputSchema: {
       type: 'object',
       properties: {
         id:               { type: 'string', description: 'Owned document ID' },
-        composition_path: { type: 'string', description: 'Local path to the deterministic composition JSON authored by the calling agent' },
+        composition_path: { type: 'string', description: 'Local path to a modular video project directory, video.project.json, or legacy deterministic composition JSON' },
         prompt:           { type: 'string', description: 'What the video should communicate and how it should feel' },
         title:            { type: 'string', description: 'Optional video title' },
         after_region_key: { type: 'string', description: 'Optional region after which to insert the video' },
@@ -614,7 +614,7 @@ async function video() {
     else if (args[i] === '--api-key' && args[i + 1]) apiKeyFlag = args[++i];
   }
   if (!docId || !compositionPath || !prompt.trim()) {
-    console.error('Usage: html-docs video <doc-id> <composition.json> --prompt <brief> [--provider codex|claude]');
+    console.error('Usage: html-docs video <doc-id> <video-project|composition.json> --prompt <brief> [--provider codex|claude]');
     process.exit(1);
   }
   const apiKey = apiKeyFlag || getApiKey();
@@ -891,7 +891,7 @@ Examples:
   npx @html-docs/cli publish ./site/ --slug my-dashboard
   npx @html-docs/cli auth
   npx @html-docs/cli update abc-123 page.html --token xyz
-  npx @html-docs/cli video abc-123 composition.json --prompt "Animate the three key ideas" --provider codex
+  npx @html-docs/cli video abc-123 ./video-project --prompt "Explain the three key ideas" --provider codex
 
 Docs: https://www.html-docs.com/developers
 `);

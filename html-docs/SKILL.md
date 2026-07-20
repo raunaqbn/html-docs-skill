@@ -185,27 +185,37 @@ GET-only, 100 req/min, 10 MB max, 10 s timeout.
 ## 3. Generate and embed an HTML video
 
 Use this when motion materially improves an owned document. **Read
-[references/html-video.md](references/html-video.md) before authoring.** The
+[references/html-video.md](references/html-video.md) before authoring, then read
+[references/video-scene-craft.md](references/video-scene-craft.md) for an
+explainer with three or more scenes.** The
 current Codex or Claude session writes deterministic, seek-driven
 HTML/CSS/JavaScript. Local Chromium and FFmpeg validate and render it; HTML Docs
 only provides signed upload targets and inserts the completed `<video>` block.
 There is no separate hosted authoring model and no Vercel media renderer.
 
 This operation requires an account API key and document ownership. Publish with
-authentication first, retain the returned document `id`, author
-`composition.json`, then resolve this skill's root directory and run:
+authentication first and retain the returned document `id`. For a real
+explainer, author a modular `video.project.json` plus one HTML/CSS/JS module per
+scene. A narrated project must include measured audio and exact word/phrase
+cues; the narration is the timing authority, never an estimate. Then resolve
+this skill's root directory and run:
 
-    <skill-root>/scripts/video.sh check composition.json
-    <skill-root>/scripts/video.sh snapshot composition.json --at 0,4000,7999
-    <skill-root>/scripts/video.sh publish composition.json \
+    <skill-root>/scripts/video.sh build ./video-project
+    <skill-root>/scripts/video.sh check ./video-project
+    <skill-root>/scripts/video.sh audit ./video-project
+    <skill-root>/scripts/video.sh publish ./video-project \
       --document <id> \
       --prompt "Animate the three key ideas as a calm editorial explainer" \
       --provider codex --quality standard
 
+`audit` is not optional for a final: inspect `quality/contact-sheet.png` and
+fix every weak, clipped, repetitive, or narration-mismatched scene before
+rendering. The publish command enforces the same quality gate.
+
 The packaged CLI is an equivalent convenience wrapper once the renderer package
 is released:
 
-    npx @html-docs/cli video <id> composition.json \
+    npx @html-docs/cli video <id> ./video-project \
       --prompt "Animate the three key ideas" --provider claude
 
 Optional flags: `--title`, `--after`, `--quality` (`draft`, `standard`,

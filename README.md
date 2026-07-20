@@ -1,6 +1,6 @@
 # html-docs
 
-**HTML publishing and local HTML-video generation for AI agents.** Publish sites, dashboards, and documents to [html-docs.com](https://www.html-docs.com), then let the current Codex or Claude session author deterministic HTML motion, render it locally, and embed the MP4.
+**HTML publishing and local HTML-video generation for AI agents.** Publish sites, dashboards, and documents to [html-docs.com](https://www.html-docs.com), then let the current Codex or Claude session author modular, cue-synced HTML explainers, audit them visually, render locally, and embed the MP4.
 
 ```
 npx @html-docs/cli publish dashboard.html
@@ -109,10 +109,11 @@ npx @html-docs/cli update <doc-id> page.html --token <token>
 ### Generate and embed a video
 
 Requires an authenticated document owned by the API-key account. The agent
-authors `composition.json`; Chromium and FFmpeg run locally:
+authors a `video.project.json` with scene modules and narration cues; Chromium
+and FFmpeg compile, audit, and render it locally:
 
 ```bash
-npx @html-docs/cli video <doc-id> composition.json \
+npx @html-docs/cli video <doc-id> ./video-project \
   --prompt "Animate the three most important ideas" \
   --provider codex --quality standard
 ```
