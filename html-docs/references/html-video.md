@@ -244,7 +244,9 @@ style.
 
 The publish command repeats validation and the quality gate, renders, uploads
 the MP4/poster directly to storage, and calls the completion endpoint. Verify
-`video_url`, `poster_url`, and `inserted_region_key`.
+`share_url`, `video_url`, `poster_url`, and `inserted_region_key`. Return
+`share_url` as the primary viewer-facing link; it opens the clean HTML Docs
+player at `/v/<code>`. Treat `video_url` as the direct storage fallback.
 
 The wrapper uses `HTMLDOCS_VIDEO_REPO`, the current workspace, or
 `~/projects/html-docs`; otherwise it runs the published

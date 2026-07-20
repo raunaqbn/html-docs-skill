@@ -633,8 +633,11 @@ async function video() {
     ...(output ? ['--output', output] : []),
   ], apiKey);
 
-  console.log(response.video_url);
+  const shareUrl = response.share_url || response.video_url;
+  console.log(shareUrl);
   console.error('');
+  console.error(`share:       ${shareUrl}`);
+  console.error(`video:       ${response.video_url}`);
   console.error(`poster:      ${response.poster_url}`);
   console.error(`composition: ${response.compositionId}`);
   console.error(`region:      ${response.inserted_region_key}`);

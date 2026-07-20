@@ -224,12 +224,15 @@ is released:
 
 Optional flags: `--title`, `--after`, `--quality` (`draft`, `standard`,
 `high`), `--model`, `--output`, `--api-key`, and `--base-url`. Canvas size and
-duration live in the composition itself. The response includes `video_url`,
-`poster_url`, `compositionId`, and `inserted_region_key`.
+duration live in the composition itself. The response includes `share_url`,
+`video_url`, `poster_url`, `compositionId`, and `inserted_region_key`.
+`share_url` is the preferred handoff: it is the stable, short HTML Docs player
+at `/v/<code>`. Keep `video_url` as the raw MP4 fallback.
 
 Do not manually call the prepare endpoint without completing the signed uploads;
 the renderer wrapper owns that two-step protocol. On success, verify the video
-region and share the existing document URL.
+region and the public `share_url`. Share the document URL too only when the
+surrounding document is part of the requested experience.
 
 ## 4. Read a document
 
