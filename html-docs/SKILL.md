@@ -191,7 +191,11 @@ explainer with three or more scenes.** The
 current Codex or Claude session writes deterministic, seek-driven
 HTML/CSS/JavaScript. Local Chromium and FFmpeg validate and render it; HTML Docs
 only provides signed upload targets and inserts the completed `<video>` block.
-There is no separate hosted authoring model and no Vercel media renderer.
+There is no separate hosted authoring model and no Vercel media renderer. This
+workflow is self-contained: do not load or depend on HyperFrames skills, project
+formats, runtimes, hosted rendering, or CLI commands. The directing rules needed
+for story, layout, motion, transitions, synchronization, and review live in this
+skill's two video references.
 
 This operation requires an account API key and document ownership. Publish with
 authentication first and retain the returned document `id`. For a real

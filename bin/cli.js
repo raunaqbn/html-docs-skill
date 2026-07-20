@@ -75,7 +75,7 @@ function httpRequest(method, urlStr, headers, body) {
 
 const MCP_SERVER_INFO = {
   name: 'html-docs',
-  version: '0.4.1',
+  version: '0.5.1',
 };
 
 const MCP_TOOLS = [

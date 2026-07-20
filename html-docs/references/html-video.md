@@ -22,6 +22,10 @@ A final explainer is a short film, not a web page with a fade. It must have:
 - A clean static read at every sampled timestamp, deterministic seeking, and a
   passing visual audit whose contact sheet has been inspected.
 
+For a multi-scene explainer, `video-scene-craft.md` is the complete directing
+doctrine. It is intentionally local to this skill; do not require HyperFrames or
+translate the project into another video framework before authoring.
+
 ## Required project shape
 
 For anything beyond a tiny silent loop, author a project directory:

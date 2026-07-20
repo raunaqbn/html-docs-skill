@@ -29,6 +29,46 @@ Choose one dominant structure:
 One scene has one job. The body normally needs 3–6 scenes; one body slide does
 not teach a mechanism.
 
+## Lead with value, then earn it
+
+The opening speaks in the viewer's language: the outcome they gain, the risk
+they avoid, or the confusion they will finally resolve. Do not open with the
+source document's title, section names, APIs, file names, or a generic
+definition unless the term itself is the mystery.
+
+Land the thesis by scene two. Everything after it is evidence: mechanism,
+process, example, comparison, caveat, or implication. Apply two deletion tests
+to the scene list:
+
+- Remove the evidence scenes. The opening and landing must still state a useful
+  claim on their own.
+- Remove the value scenes. If the remainder still feels complete, it is a tour
+  of sections rather than a story; reorder it around the viewer's outcome.
+
+For every scene, write a one-line `why`. If it cannot be traced to the thesis,
+cut or merge the scene rather than decorating it.
+
+## Write one video-direction block
+
+Before scene code, put one `## Video direction` block near the top of
+`STORYBOARD.md`. It is the contract shared by every scene and should contain:
+
+- Palette and type roles from `design.md`, including the dominant hue, accent,
+  display role, body role, line weight, corner language, and caption keep-out.
+- Layout rhythm as a sequence, for example
+  `layered hook → asymmetric orientation → diagram build → full-width route →
+  split caveat → centered landing`. Use at least three framings and do not
+  repeat a framing on adjacent scenes unless the repeated stage is meaningful.
+- Motion grammar: the small set of verbs used across the film, the default
+  decelerating feel, cue-paced reveals, and which scenes intentionally hold.
+- Transition grammar: two or three seam types with a semantic reason for each.
+- Negative rules: no front-loaded slideshow, no independent screensaver drift,
+  no generic floating cards, no decorative motion without explanatory purpose,
+  and no important content in the caption band.
+
+Per-scene notes contain only their delta from this block. Repeating the same
+design paragraph under every scene weakens continuity rather than improving it.
+
 ## Storyboard every scene as timed cues
 
 Write the locked narration as short clauses that can cue visible events. Then
@@ -48,10 +88,17 @@ Narration: "First, lower the burden. Then protect against tumor lysis."
 - Hold: settled cause-and-effect diagram; no decorative drift.
 ```
 
-The cue is not a caption marker. It is visual ownership. If a phrase names a
-new mechanism, the corresponding visual arrives during that phrase. Do not
-show the final mechanism diagram while the narration is still defining the
-problem.
+The cue is not a caption marker. It is visual ownership. Every spoken phrase
+belongs to exactly one scene and at least one unique target ID in that scene.
+If a phrase names a new mechanism, the corresponding visual arrives during
+that phrase. Do not show the final mechanism diagram while the narration is
+still defining the problem. A target may be prepared invisibly, but it must not
+read as landed before its owning cue.
+
+For each scene, make a cue ledger with `phrase`, `start/end`, `target IDs`,
+`visual verb`, and `settled read`. Concatenated cue phrases must equal the locked
+narration exactly and in order. Final audio measurements own the timestamps;
+character counts and storyboard estimates never do.
 
 ## Design a world, not a card layout
 
@@ -123,11 +170,20 @@ The element moving first is read as most important.
 
 ### Build, develop, settle
 
-- Entry: only the first spoken idea appears. Offset it slightly from the cut.
-- Development: later pieces arrive across the scene, especially its back half,
-  on their narration cues.
-- Settle: the result holds long enough to read. Prefer stillness to a fake
-  breathing loop or an uncomfortable slow camera push.
+- Build: only the first spoken idea appears. Establish the stage and focal
+  object without revealing the finished explanation. Offset the first move
+  slightly from the cut so the seam can register.
+- Develop: later pieces arrive across the scene—especially its back half—on
+  their narration cues. Each move changes meaning: connect, compare, count,
+  isolate, transform, or prove. Coordinated elements move as one system.
+- Settle: the result holds long enough to read. Stop explanatory motion after
+  the final cue. Prefer stillness to a fake breathing loop or an uncomfortable
+  slow camera push.
+
+The renderer samples scenes at roughly 12%, 52%, 86%, and cue midpoints. Those
+frames should read as build, development, and settled result—not three nearly
+identical slides. A deliberately held scene is valid; a scene that reveals its
+whole answer in the first quarter and then waits is not.
 
 Entrances should generally decelerate smoothly (`outCubic`/`outExpo`). Exits,
 when truly needed in the final scene, are quicker. Avoid bounce and overshoot
@@ -142,6 +198,13 @@ Transitions communicate meaning:
 
 Pick 2–3 transition types for the video and repeat them deliberately. A
 different novelty transition on every cut destroys the motion grammar.
+
+Treat transition direction as continuity data. If an object exits left on an
+ordered route, the next stage should enter from the matching direction. Use a
+zoom only when the level of explanation changes, a push only when order or
+continuity matters, a crossfade when the same idea changes state, and a cut
+when the narrative changes register. Never use a transition merely because it
+has not appeared yet.
 
 ## Continuity without a monolith
 
@@ -188,3 +251,16 @@ The audit score is a gate, not taste. Open the generated contact sheet and ask:
 Then watch the rendered MP4 with sound. A contact sheet cannot reveal a late
 voiceover handoff, rushed read, awkward pause, or poor pronunciation. Fix those
 and run the loop again before publishing.
+
+Review in three passes:
+
+1. Story and continuity: read only the large forms. Confirm the value claim,
+   cumulative spine, framing rhythm, meaningful object carry, and landing.
+2. Cue synchronization: inspect every cue midpoint. The visible target must be
+   the phrase currently spoken; the next idea must not already be landed.
+3. Finish: check clipping, label size, caption clearance, contrast, held-read
+   duration, pronunciation, audio handoffs, and whether opening and closing
+   frames are as authored as the body.
+
+Do not publish on audit score alone. The score enforces minimum structure; the
+contact sheet and full sound-on watch decide whether the film is actually good.
