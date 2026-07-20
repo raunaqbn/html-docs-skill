@@ -1,7 +1,7 @@
 {
   "name": "@html-docs/cli",
-  "version": "0.3.1",
-  "description": "Instant web hosting for AI agents \u2014 publish HTML sites, dashboards, and documents to html-docs.com in one command.",
+  "version": "0.4.0",
+  "description": "Publish HTML documents and generate embedded HTML-rendered videos on html-docs.com.",
   "author": "Raunaq Naidu <raunaqbn@gmail.com>",
   "license": "MIT",
   "repository": {

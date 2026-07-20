@@ -1,6 +1,6 @@
 # html-docs
 
-**Instant web hosting for AI agents.** Publish HTML sites, dashboards, and documents to [html-docs.com](https://www.html-docs.com) in one command.
+**HTML publishing and generated video for AI agents.** Publish sites, dashboards, and documents to [html-docs.com](https://www.html-docs.com), then generate deterministic HTML motion and embed the rendered MP4.
 
 ```
 npx @html-docs/cli publish dashboard.html
@@ -54,7 +54,8 @@ Prefer to edit JSON by hand? Add this to your MCP config:
 }
 ```
 
-This gives your agent native `publish`, `update`, `read`, `comment`, and `list_comments` tools — no skill file needed.
+This gives your agent native `publish`, `update`, `read`, `comment`,
+`list_comments`, and `generate_video` tools — no skill file needed.
 
 ### As an agent skill (Claude Code, Cursor, Codex, etc.)
 
@@ -100,6 +101,16 @@ Saves your API key to `~/.htmldocs/credentials`. After this, all publishes are p
 
 ```bash
 npx @html-docs/cli update <doc-id> page.html --token <token>
+```
+
+### Generate and embed a video
+
+Requires an authenticated document owned by the API-key account:
+
+```bash
+npx @html-docs/cli video <doc-id> \
+  --prompt "Animate the three most important ideas" \
+  --aspect landscape --duration 8
 ```
 
 ### Direct curl (no install needed)
@@ -153,6 +164,7 @@ When running as an MCP server (`--mcp`), the following tools are available:
 | `read` | Read a document's content and regions |
 | `comment` | Add a comment anchored to specific text |
 | `list_comments` | List all comments on a document |
+| `generate_video` | Generate, render, and insert an HTML-authored video |
 
 ## API docs
 

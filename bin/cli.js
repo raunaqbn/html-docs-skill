@@ -8,6 +8,7 @@
  *   npx @html-docs/cli publish <file-or-dir> [--slug <slug>] [--api-key <key>]
  *   npx @html-docs/cli auth
  *   npx @html-docs/cli update <id> <file-or-dir> [--token <token>]
+ *   npx @html-docs/cli video <id> --prompt <brief>
  *   npx @html-docs/cli --mcp    Start MCP (Model Context Protocol) server
  */
 
@@ -18,7 +19,7 @@ const readline = require('readline');
 const https = require('https');
 const http = require('http');
 
-const BASE_URL = 'https://www.html-docs.com';
+const BASE_URL = (process.env.HTMLDOCS_BASE_URL || 'https://www.html-docs.com').replace(/\/$/, '');
 const CREDENTIALS_FILE = path.join(
   process.env.HOME || process.env.USERPROFILE || '~',
   '.htmldocs',
@@ -74,7 +75,7 @@ function httpRequest(method, urlStr, headers, body) {
 
 const MCP_SERVER_INFO = {
   name: 'html-docs',
-  version: '0.3.0',
+  version: '0.4.0',
 };
 
 const MCP_TOOLS = [
@@ -164,6 +165,24 @@ const MCP_TOOLS = [
       required: ['id'],
     },
   },
+  {
+    name: 'generate_video',
+    description: 'Generate deterministic HTML motion for an owned document, render it to MP4, and insert it as a video block. Requires an account API key.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        id:               { type: 'string', description: 'Owned document ID' },
+        prompt:           { type: 'string', description: 'What the video should communicate and how it should feel' },
+        title:            { type: 'string', description: 'Optional video title' },
+        after_region_key: { type: 'string', description: 'Optional region after which to insert the video' },
+        aspect_ratio:     { type: 'string', enum: ['landscape', 'portrait', 'square'], description: 'Output aspect ratio' },
+        duration_seconds: { type: 'number', minimum: 3, maximum: 15, description: 'Duration in seconds' },
+        quality:          { type: 'string', enum: ['draft', 'standard', 'high'], description: 'Encoding quality' },
+        api_key:          { type: 'string', description: 'Optional account API key; falls back to configured credentials' },
+      },
+      required: ['id', 'prompt'],
+    },
+  },
 ];
 
 function mcpAuthHeaders(args) {
@@ -234,6 +253,24 @@ async function mcpCallTool(name, args) {
       const url = `${BASE_URL}/api/v1/docs/${args.id}/comments`;
       const headers = mcpAuthHeaders(args);
       const res = await httpRequest('GET', url, headers);
+      if (res.error) throw new Error(res.error);
+      return res;
+    }
+    case 'generate_video': {
+      if (!args.id || !args.prompt) throw new Error('id and prompt are required');
+      const key = args.api_key || getApiKey();
+      if (!key) throw new Error('Video generation requires an account API key. Run html-docs auth first.');
+      const url = `${BASE_URL}/api/v1/docs/${args.id}/videos`;
+      const headers = { 'content-type': 'application/json', authorization: `Bearer ${key}` };
+      const body = JSON.stringify({
+        prompt: args.prompt,
+        ...(args.title ? { title: args.title } : {}),
+        ...(args.after_region_key ? { after_region_key: args.after_region_key } : {}),
+        ...(args.aspect_ratio ? { aspect_ratio: args.aspect_ratio } : {}),
+        ...(args.duration_seconds ? { duration_seconds: args.duration_seconds } : {}),
+        ...(args.quality ? { quality: args.quality } : {}),
+      });
+      const res = await httpRequest('POST', url, headers, body);
       if (res.error) throw new Error(res.error);
       return res;
     }
@@ -515,6 +552,49 @@ async function update() {
   }
 }
 
+async function video() {
+  const docId = args[0];
+  let prompt = '', title = '', afterRegionKey = '', aspectRatio = 'landscape';
+  let quality = 'standard', apiKeyFlag = '', durationSeconds = 8;
+  for (let i = 1; i < args.length; i++) {
+    if (args[i] === '--prompt' && args[i + 1]) prompt = args[++i];
+    else if (args[i] === '--title' && args[i + 1]) title = args[++i];
+    else if (args[i] === '--after-region' && args[i + 1]) afterRegionKey = args[++i];
+    else if (args[i] === '--aspect' && args[i + 1]) aspectRatio = args[++i];
+    else if (args[i] === '--duration' && args[i + 1]) durationSeconds = Number(args[++i]);
+    else if (args[i] === '--quality' && args[i + 1]) quality = args[++i];
+    else if (args[i] === '--api-key' && args[i + 1]) apiKeyFlag = args[++i];
+  }
+  if (!docId || !prompt.trim()) {
+    console.error('Usage: html-docs video <doc-id> --prompt <brief> [--aspect landscape|portrait|square] [--duration 3-15]');
+    process.exit(1);
+  }
+  const apiKey = apiKeyFlag || getApiKey();
+  if (!apiKey) die('video generation requires an account API key; run html-docs auth first');
+  if (!['landscape', 'portrait', 'square'].includes(aspectRatio)) die('invalid --aspect');
+  if (!['draft', 'standard', 'high'].includes(quality)) die('invalid --quality');
+  if (!Number.isFinite(durationSeconds) || durationSeconds < 3 || durationSeconds > 15) die('--duration must be from 3 to 15');
+
+  const response = await httpRequest(
+    'POST',
+    `${BASE_URL}/api/v1/docs/${docId}/videos`,
+    { 'content-type': 'application/json', authorization: `Bearer ${apiKey}` },
+    JSON.stringify({
+      prompt: prompt.trim(), title: title || undefined,
+      after_region_key: afterRegionKey || undefined,
+      aspect_ratio: aspectRatio, duration_seconds: durationSeconds, quality,
+    }),
+  );
+  if (response.error) die(response.error);
+
+  console.log(response.video_url);
+  console.error('');
+  console.error(`poster:      ${response.poster_url}`);
+  console.error(`composition: ${response.composition_id}`);
+  console.error(`render:      ${response.render_id}`);
+  console.error(`region:      ${response.inserted_region_key}`);
+}
+
 // ── install: auto-configure the MCP server into agent clients ──────
 
 const MCP_ENTRY = { command: 'npx', args: ['-y', '@html-docs/cli', '--mcp'] };
@@ -747,6 +827,15 @@ Usage:
     --token <token>                  Doc token for anonymous updates
     --api-key <key>                  API key for authenticated updates
 
+  html-docs video <id> --prompt <brief>
+                                      Generate, render, and embed an HTML video
+    --title <text>                    Optional video title
+    --after-region <key>              Insert after a specific region
+    --aspect <ratio>                  landscape, portrait, or square
+    --duration <seconds>              3-15 seconds (default: 8)
+    --quality <level>                 draft, standard, or high
+    --api-key <key>                   Account API key (required)
+
   html-docs --mcp                    Start MCP server (JSON-RPC over stdio)
 
 Examples:
@@ -756,6 +845,7 @@ Examples:
   npx @html-docs/cli publish ./site/ --slug my-dashboard
   npx @html-docs/cli auth
   npx @html-docs/cli update abc-123 page.html --token xyz
+  npx @html-docs/cli video abc-123 --prompt "Animate the three key ideas"
 
 Docs: https://www.html-docs.com/developers
 `);
@@ -772,6 +862,9 @@ switch (command) {
     break;
   case 'update':
     update().catch(e => die(e.message));
+    break;
+  case 'video':
+    video().catch(e => die(e.message));
     break;
   case 'install':
     install().catch(e => die(e.message));

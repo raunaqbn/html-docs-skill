@@ -1,17 +1,12 @@
 ---
 name: html-docs
 description: >
-  Publish websites, dashboards, and documents to the web instantly. Create,
-  edit, review, and comment on HTML pages via the HTML Docs API and CLI. Use
-  when asked to "publish this", "host this", "deploy this", "share this on
-  the web", "make a website", "put this online", "create a webpage",
-  "generate a URL", "build a dashboard", to review or comment on a doc, or
-  when given an html-docs.com link to work with. Published pages with inline
-  JavaScript (Chart.js, D3, Plotly, SPAs) work out of the box.
-globs:
-  - "**/*.html"
-  - "**/*.htm"
-  - "**/*.md"
+  Publish websites, dashboards, and documents to the web instantly; create,
+  edit, review, and comment on HTML pages; and generate deterministic
+  HTML-authored videos rendered to MP4 and embedded in owned documents. Use
+  when asked to publish, host, deploy, share HTML, create a webpage or
+  dashboard, work with an html-docs.com link, or add a generated motion graphic
+  or video to an HTML Docs document. Inline JavaScript works in published pages.
 ---
 
 # HTML Docs — Instant Web Publishing
@@ -85,7 +80,8 @@ To configure by hand instead, add this to your MCP config:
       }
     }
 
-Available tools: publish, publish_file, update, read, comment, list_comments.
+Available tools: publish, publish_file, update, read, comment, list_comments,
+generate_video.
 Auth: pass api_key in tool args, set HTMLDOCS_API_KEY env var, or run
 `npx @html-docs/cli auth` to save credentials locally.
 
@@ -185,7 +181,36 @@ Returns `{ id, url, siteUrl, slug }`. The hosted page updates instantly.
 
 GET-only, 100 req/min, 10 MB max, 10 s timeout.
 
-## 3. Read a document
+## 3. Generate and embed an HTML video
+
+Use this when motion materially improves an owned document. HTML Docs asks the
+configured model to author deterministic, seek-driven HTML/CSS/JavaScript,
+validates repeated-frame output, renders it with Chromium and FFmpeg, uploads
+the MP4 and poster, and inserts a `<video>` block.
+
+This operation requires an account API key and document ownership. Publish with
+authentication first, retain the returned document `id`, then run:
+
+    npx @html-docs/cli video <id> \
+      --prompt "Animate the three key ideas as a calm editorial explainer" \
+      --aspect landscape --duration 8
+
+Or call the API directly:
+
+    curl -sS -X POST https://www.html-docs.com/api/v1/docs/<id>/videos \
+      -H "Authorization: Bearer $HTMLDOCS_API_KEY" \
+      -H 'Content-Type: application/json' \
+      -d '{"prompt":"Animate the three key ideas","duration_seconds":8}'
+
+Optional fields: `title`, `after_region_key`, `aspect_ratio` (`landscape`,
+`portrait`, `square`), `duration_seconds` (3–15), and `quality` (`draft`,
+`standard`, `high`). The response includes `video_url`, `poster_url`,
+`composition_id`, `render_id`, and `inserted_region_key`.
+
+Treat this as a long-running request. Do not retry while the first call is still
+running. On success, share the video URL and the existing document URL.
+
+## 4. Read a document
 
 From a link: `/d/<id>?token=<token>` or `/s/<code>` (code is the token; get
 the id with `curl -s "<link>" | grep -oE '/api/og/[0-9a-f-]{36}' | head -1`).
@@ -199,7 +224,7 @@ Returns `{ title, html_content, regions, visibility, updated_at }`.
 `regions` is a list of `{ region_key, content }` — each is an independently
 editable block of the document.
 
-## 4. Edit a document
+## 5. Edit a document
 
 **Edit one region** (preserves comment anchors — preferred):
 
@@ -213,7 +238,7 @@ editable block of the document.
       -H 'x-doc-token: <token>' \
       --data-binary @new.html
 
-## 5. Review and comment
+## 6. Review and comment
 
 List existing comments:
 
@@ -244,7 +269,7 @@ Edit or delete your own comments:
     curl -s -X PATCH .../comments/<id> -d '{"content":"Updated"}'
     curl -s -X DELETE .../comments/<id>
 
-## 6. Version history
+## 7. Version history
 
     GET  /api/v1/docs/<id>/versions              — list versions
     POST /api/v1/docs/<id>/versions               — capture {"name":"…"}
@@ -252,7 +277,7 @@ Edit or delete your own comments:
 
 Every edit auto-snapshots the prior state.
 
-## 7. Convert a PDF, and export a polished PDF
+## 8. Convert a PDF, and export a polished PDF
 
 Full guide: **[references/pdf.md](references/pdf.md)**. The PDF round-trip has
 two directions — both aim for a *designed* document, never a flat reflow.
@@ -343,3 +368,4 @@ Returns the live machine-readable contract with all endpoints. See also
 | POST | /api/v1/docs/:id/versions | Capture version |
 | POST | /api/v1/docs/:id/versions/:vid/restore | Restore version |
 | GET | /api/v1/docs/:id/pdf | Export as PDF (`?format=`, `?landscape=1`, `?html=1`) |
+| POST | /api/v1/docs/:id/videos | Generate, render, and embed an HTML video (owner key required) |

@@ -1,0 +1,7 @@
+interface:
+  display_name: "HTML Docs"
+  short_description: "Publish HTML and embed generated videos"
+  default_prompt: "Use $html-docs to publish this document and add an embedded generated video if it helps explain the content."
+
+policy:
+  allow_implicit_invocation: true

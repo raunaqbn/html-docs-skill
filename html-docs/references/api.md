@@ -39,6 +39,28 @@ Publish HTML or Markdown to a live URL at `/site/<slug>`.
 
 Returns title, html_content (with region placeholders), and regions array.
 
+### POST /api/v1/docs/:id/videos — Generate and embed video
+
+Requires an account agent key and document ownership; doc tokens are not
+accepted because generation consumes model and rendering resources.
+
+Body:
+
+```json
+{
+  "prompt": "Animate the three key ideas",
+  "title": "Optional title",
+  "after_region_key": "region-optional",
+  "aspect_ratio": "landscape",
+  "duration_seconds": 8,
+  "quality": "standard"
+}
+```
+
+`aspect_ratio` is `landscape`, `portrait`, or `square`; duration is 3–15
+seconds; quality is `draft`, `standard`, or `high`. Returns the MP4 and poster
+URLs, composition/render IDs, inserted region key, and validation report.
+
 ### PUT /api/v1/docs/:id — Replace content
 
 Full content replacement. Prior state is snapshotted to version history.
