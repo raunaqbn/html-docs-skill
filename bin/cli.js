@@ -75,7 +75,7 @@ function httpRequest(method, urlStr, headers, body) {
 
 const MCP_SERVER_INFO = {
   name: 'html-docs',
-  version: '0.4.0',
+  version: '0.4.1',
 };
 
 const MCP_TOOLS = [
@@ -580,7 +580,7 @@ function runLocalVideoRenderer(rendererArgs, apiKey) {
   const command = localRepo ? 'pnpm' : (process.platform === 'win32' ? 'npx.cmd' : 'npx');
   const commandArgs = localRepo
     ? ['--dir', localRepo, '--filter', '@html-docs/html-video', 'cli', ...rendererArgs]
-    : ['-y', '@html-docs/html-video', ...rendererArgs];
+    : ['-y', '--package', '@html-docs/html-video', 'html-docs-video', ...rendererArgs];
   const result = spawnSync(command, commandArgs, {
     encoding: 'utf8',
     maxBuffer: 20 * 1024 * 1024,

@@ -23,5 +23,6 @@ if [[ -n "$video_repo" ]]; then
   exec pnpm --dir "$video_repo" --filter @html-docs/html-video cli "$@"
 fi
 
-# Portable fallback once @html-docs/html-video is installed or published.
-exec npx -y @html-docs/html-video "$@"
+# A scoped package whose executable has a different name must be selected
+# explicitly; `npx @html-docs/html-video` cannot infer `html-docs-video`.
+exec npx -y --package @html-docs/html-video html-docs-video "$@"
