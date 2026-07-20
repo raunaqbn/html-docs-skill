@@ -75,7 +75,7 @@ function httpRequest(method, urlStr, headers, body) {
 
 const MCP_SERVER_INFO = {
   name: 'html-docs',
-  version: '0.5.1',
+  version: '0.5.2',
 };
 
 const MCP_TOOLS = [
@@ -600,7 +600,7 @@ function runLocalVideoRenderer(rendererArgs, apiKey) {
 
 async function video() {
   const docId = args[0];
-  const compositionPath = args[1] && !args[1].startsWith('--') ? args[1] : '';
+  const compositionPath = args[1] && !args[1].startsWith('--') ? path.resolve(args[1]) : '';
   let prompt = '', title = '', afterRegionKey = '', quality = 'standard';
   let provider = 'other-local-agent', model = '', output = '', apiKeyFlag = '';
   for (let i = compositionPath ? 2 : 1; i < args.length; i++) {
@@ -610,7 +610,7 @@ async function video() {
     else if (args[i] === '--quality' && args[i + 1]) quality = args[++i];
     else if (args[i] === '--provider' && args[i + 1]) provider = args[++i];
     else if (args[i] === '--model' && args[i + 1]) model = args[++i];
-    else if (args[i] === '--output' && args[i + 1]) output = args[++i];
+    else if (args[i] === '--output' && args[i + 1]) output = path.resolve(args[++i]);
     else if (args[i] === '--api-key' && args[i + 1]) apiKeyFlag = args[++i];
   }
   if (!docId || !compositionPath || !prompt.trim()) {
