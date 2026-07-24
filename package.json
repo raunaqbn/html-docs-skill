@@ -6,7 +6,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/raunaqbn/html-docs-skill"
+    "url": "git+https://github.com/raunaqbn/html-docs-skill.git"
   },
   "homepage": "https://www.html-docs.com/developers",
   "keywords": [
@@ -26,7 +26,7 @@
     "static-site"
   ],
   "bin": {
-    "html-docs": "./bin/cli.js"
+    "html-docs": "bin/cli.js"
   },
   "files": [
     "bin/",
