@@ -1,7 +1,7 @@
 interface:
   display_name: "HTML Docs"
-  short_description: "Publish HTML and build cue-synced explainer videos"
-  default_prompt: "Use $html-docs to publish this document and, when motion helps, author, audit, and locally render a modular cue-synced explainer video."
+  short_description: "Publish HTML, videos, and learning courses"
+  default_prompt: "Use $html-docs to turn this source into a polished private course with rich lesson pages, cue-synced explanatory videos, captions, and knowledge checks."
 
 policy:
   allow_implicit_invocation: true

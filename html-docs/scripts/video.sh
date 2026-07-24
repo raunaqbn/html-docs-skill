@@ -5,11 +5,17 @@ set -euo pipefail
 # the caller's path semantics before handing arguments to either renderer path.
 caller_dir="$PWD"
 renderer_args=("$@")
-if (( ${#renderer_args[@]} >= 2 )) && [[ "${renderer_args[1]}" != --* ]] && [[ "${renderer_args[1]}" != /* ]]; then
-  renderer_args[1]="$caller_dir/${renderer_args[1]}"
+target_index=1
+if (( ${#renderer_args[@]} >= 1 )) && [[ "${renderer_args[0]}" == "course" ]]; then
+  target_index=2
+elif (( ${#renderer_args[@]} >= 1 )) && [[ "${renderer_args[0]}" == "studio" ]]; then
+  target_index=-1
+fi
+if (( target_index >= 0 && ${#renderer_args[@]} > target_index )) && [[ "${renderer_args[$target_index]}" != --* ]] && [[ "${renderer_args[$target_index]}" != /* ]] && [[ "${renderer_args[$target_index]}" != *://* ]]; then
+  renderer_args[$target_index]="$caller_dir/${renderer_args[$target_index]}"
 fi
 for ((i = 0; i < ${#renderer_args[@]}; i++)); do
-  if [[ "${renderer_args[$i]}" == "--output" ]] && (( i + 1 < ${#renderer_args[@]} )) && [[ "${renderer_args[$((i + 1))]}" != /* ]]; then
+  if [[ "${renderer_args[$i]}" =~ ^--(output|output-dir|voiceover|source)$ ]] && (( i + 1 < ${#renderer_args[@]} )) && [[ "${renderer_args[$((i + 1))]}" != /* ]]; then
     renderer_args[$((i + 1))]="$caller_dir/${renderer_args[$((i + 1))]}"
   fi
 done
