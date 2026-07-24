@@ -18,7 +18,9 @@ A final explainer is a short film, not a web page with a fade. It must have:
 - Sequential development across each scene. Do not reveal the finished canvas
   in its first quarter and hold it under the rest of the voiceover.
 - Exact narration ownership. Every spoken word or phrase belongs to one cue,
-  one scene, and one or more unique visual target IDs.
+  one scene, and one or more stable `data-hv-id` visual targets.
+- Semantic caption groups and active-word highlighting derive from the same
+  normalized word track as cues and scenes.
 - A clean static read at every sampled timestamp, deterministic seeking, and a
   passing visual audit whose contact sheet has been inspected.
 
@@ -38,8 +40,13 @@ video-project/
   design.md                 palette, type roles, layout and motion grammar
   video.project.json        compiler manifest
   audio/
-    voiceover.wav           final measured narration
-    words.json              exact word timings when available
+    request.json            provider-neutral profile + delivery request
+    manifest.json           provider, segments, loudness, pre/post roll
+    pronunciations.json     spoken/display mappings and reviewed terms
+    segments/               scene-sized editable narration sources
+    master.wav              final playback timing authority
+    words.json              exact normalized final word track
+    captions.json           editable semantic caption groups
   assets/                   frozen local images, fonts, icons, or footage
   scenes/
     01-hook.html
@@ -63,13 +70,14 @@ is discussing the next idea.
    to exactly one storyboard scene.
 2. Generate or record the final voiceover before final scene timing. Never
    stretch a storyboard estimate to fit it.
-3. Obtain exact word timings. Prefer provider-native timestamps. Otherwise run
-   a local aligner/transcriber such as Whisper/WhisperX against the final audio.
+3. Obtain exact word timings. Prefer ElevenLabs/HeyGen native timestamps.
+   Otherwise forced-align the locked script against final audio. Unconstrained
+   transcription is not timing truth.
 4. Split each scene's narration into short, ordered cue phrases. The cue texts,
    concatenated, must equal that scene's narration exactly—no paraphrases,
    dropped words, or duplicated words.
-5. Give every cue one or more unique ID selectors for the visual elements it
-   owns. A target must live in the same scene as the cue.
+5. Give every cue one or more stable semantic target IDs for visual elements
+   carrying `data-hv-id`. A target must live in the same scene as the cue.
 6. Reveal or emphasize the target during the cue that names it. It must not be
    fully visible in an earlier scene merely because it was convenient to build
    the final layout up front.
@@ -92,22 +100,41 @@ Word timing file shape:
 cue must provide explicit `startMs` and `endMs` measured from the final audio.
 Estimated timestamps are not acceptable for a final.
 
+Use provider-neutral voice profiles:
+
+- `precise-engineer` for technical/code material.
+- `gentle-guide` for medical, personal, or sensitive material.
+- `warm-teacher` for general education.
+- `energetic-coach` for motivational practice.
+
+Explicit user choice wins. Generate scene-sized segments with neighboring
+context when supported, then compile one master near −16 LUFS / −1 dBTP. Add
+200 ms pre-roll and 600 ms settled post-roll. Preserve separate spoken text,
+display text, pronunciation mappings, and non-spoken delivery direction.
+Provider credentials and profile→voice mappings remain local.
+
 ## Project manifest
 
 ```json
 {
   "kind": "html-video-project",
-  "version": 1,
+  "version": 2,
   "id": "how-treatment-works",
   "title": "How the treatment works",
   "width": 1280,
   "height": 720,
   "fps": 30,
   "globalCss": "global.css",
-  "voiceover": {
-    "audio": "audio/voiceover.wav",
-    "timings": "audio/words.json"
+  "audio": {
+    "master": "audio/master.wav",
+    "timings": "audio/words.json",
+    "manifest": "audio/manifest.json",
+    "provider": "elevenlabs",
+    "voiceProfile": "gentle-guide"
   },
+  "captions": { "defaultOn": true, "minWords": 2, "maxWords": 6, "pauseMs": 360 },
+  "source": { "evidenceIds": ["ev-baseline"], "sourceHash": "…" },
+  "manualOverrides": [],
   "assets": [
     { "id": "scan", "kind": "image", "src": "assets/scan.png" },
     { "id": "display", "kind": "font", "src": "assets/display.woff2" }
@@ -116,24 +143,30 @@ Estimated timestamps are not acceptable for a final.
     {
       "id": "baseline",
       "label": "Baseline checks",
+      "teachingJob": "Turn two tests into one readiness decision.",
+      "evidenceIds": ["ev-baseline"],
       "layout": "split",
       "html": "scenes/02-baseline.html",
       "css": "scenes/02-baseline.css",
       "script": "scenes/02-baseline.js",
       "transition": "push-left",
-      "narration": "The scan maps the disease. The heart test clears the planned treatment.",
+      "spokenText": "The scan maps the disease. The heart test clears the planned treatment.",
       "cues": [
         {
           "id": "scan-map",
-          "text": "The scan maps the disease.",
-          "targets": ["#baseline-scan"],
-          "effect": "wipe"
+          "spokenText": "The scan maps the disease.",
+          "targets": ["baseline-scan"],
+          "effect": "wipe",
+          "visualVerb": "uncover the mapped region",
+          "settledState": "scan and affected area read as one evidence pair"
         },
         {
           "id": "heart-clearance",
-          "text": "The heart test clears the planned treatment.",
-          "targets": ["#baseline-heart", "#baseline-check"],
-          "effect": "scale"
+          "spokenText": "The heart test clears the planned treatment.",
+          "targets": ["baseline-heart", "baseline-check"],
+          "effect": "scale",
+          "visualVerb": "connect and lock the clearance",
+          "settledState": "both tests converge on a visible ready state"
         }
       ]
     }
@@ -154,8 +187,9 @@ motion.
 
 Scene HTML is a fragment, not a document. Do not include `<html>`, `<style>`,
 `<script>`, network resources, audio, video, forms, iframes, or event-handler
-attributes. Use unique element IDs across the whole project; cue targets must be
-ID selectors.
+attributes. Give every selectable/cue-owned element a globally unique
+`data-hv-id`; cue targets use those semantic IDs. Ordinary DOM IDs may still
+support internal SVG and script mechanics.
 
 Scene CSS must be scoped beneath `#hv-scene-<scene-id>` or use globally unique
 class names. Do not use `transition`, `animation`, or `@keyframes` for
@@ -173,8 +207,8 @@ Each scene JS file is the body of a deterministic render function. It receives:
 // phase(t,a,b), h (HtmlVideoRuntime helpers), variables
 
 var reveal = h.ease.outCubic(cue('heart-clearance'))
-root.querySelector('#ef-number').textContent = h.countTo(60, reveal, 0) + '%'
-h.drawPath(root.querySelector('#scan-outline'), cue('scan-map'))
+root.querySelector('[data-hv-id="ef-number"]').textContent = h.countTo(60, reveal, 0) + '%'
+h.drawPath(root.querySelector('[data-hv-id="scan-outline"]'), cue('scan-map'))
 ```
 
 Derive every render-critical property from `timeMs`, `progress`, or `cue(id)`.
@@ -203,6 +237,9 @@ style.
 
 1. Read the owned document via `GET /api/v1/docs/:id` and extract the teaching
    truth: audience, confusion, thesis, 3–6 mechanisms, evidence, landing.
+   If the editor created a persistent project, first run
+   `video.sh studio requests <project-id>` and use its queued brief, voice
+   profile, document ID, and target depth.
 2. Write `BRIEF.md`, locked `SCRIPT.md`, `STORYBOARD.md`, and `design.md`.
    For multi-scene explainers, apply `video-scene-craft.md`.
 3. Produce final voiceover and exact timings. Real audio duration wins.
@@ -237,6 +274,7 @@ style.
 
    ```bash
    <skill-root>/scripts/video.sh publish ./video-project \
+     --project-id <persistent-project-id-if-queued> \
      --document <document-id> \
      --prompt "Explain the document with cue-synced diagrams" \
      --provider codex --quality high
@@ -246,7 +284,9 @@ The publish command repeats validation and the quality gate, renders, uploads
 the MP4/poster directly to storage, and calls the completion endpoint. Verify
 `share_url`, `video_url`, `poster_url`, and `inserted_region_key`. Return
 `share_url` as the primary viewer-facing link; it opens the clean HTML Docs
-player at `/v/<code>`. Treat `video_url` as the direct storage fallback.
+player at `/v/<code>`. Open `/videos/<project-id>/studio` for storyboard,
+timeline, selection, overrides, edit requests, and rollback. Treat `video_url`
+as direct storage fallback.
 
 The wrapper uses `HTMLDOCS_VIDEO_REPO`, the current workspace, or
 `~/projects/html-docs`; otherwise it runs the published

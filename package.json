@@ -1,7 +1,7 @@
 {
   "name": "@html-docs/cli",
-  "version": "0.5.3",
-  "description": "Publish HTML documents and build cue-synced modular HTML explainer videos on html-docs.com.",
+  "version": "0.6.0",
+  "description": "Publish HTML and build source-grounded courses with cue-synced explanatory videos on html-docs.com.",
   "author": "Raunaq Naidu <raunaqbn@gmail.com>",
   "license": "MIT",
   "repository": {

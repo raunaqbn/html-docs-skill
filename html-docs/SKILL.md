@@ -2,11 +2,14 @@
 name: html-docs
 description: >
   Publish websites, dashboards, and documents to the web instantly; create,
-  edit, review, and comment on HTML pages; and generate deterministic
-  HTML-authored videos rendered to MP4 and embedded in owned documents. Use
+  edit, review, and comment on HTML pages; generate deterministic
+  HTML-authored videos with exact narration/caption synchronization; and turn
+  folders, documents, PDFs, URLs, or codebases into private source-grounded
+  courses with lesson sites and Guided Studio. Use
   when asked to publish, host, deploy, share HTML, create a webpage or
-  dashboard, work with an html-docs.com link, or add a generated motion graphic
-  or video to an HTML Docs document. Inline JavaScript works in published pages.
+  dashboard, work with an html-docs.com link, add a generated motion graphic or
+  video to a document, or create a learning site. Inline JavaScript works in
+  published pages.
 ---
 
 # HTML Docs — Instant Web Publishing
@@ -81,8 +84,8 @@ To configure by hand instead, add this to your MCP config:
     }
 
 Available tools: publish, publish_file, update, read, comment, list_comments,
-generate_video. For `generate_video`, the agent must author a local composition
-file first; the MCP tool does not invoke a second hosted model.
+generate_video. For video/course work, the active agent authors local project
+artifacts; neither the MCP tool nor CLI invokes a second hosted model.
 Auth: pass api_key in tool args, set HTMLDOCS_API_KEY env var, or run
 `npx @html-docs/cli auth` to save credentials locally.
 
@@ -190,7 +193,8 @@ Use this when motion materially improves an owned document. **Read
 explainer with three or more scenes.** The
 current Codex or Claude session writes deterministic, seek-driven
 HTML/CSS/JavaScript. Local Chromium and FFmpeg validate and render it; HTML Docs
-only provides signed upload targets and inserts the completed `<video>` block.
+stores immutable versions, serves Guided Studio and the live player, and
+inserts a portable `<html-video>` block with a nested MP4 fallback.
 There is no separate hosted authoring model and no Vercel media renderer. This
 workflow is self-contained: do not load or depend on HyperFrames skills, project
 formats, runtimes, hosted rendering, or CLI commands. The directing rules needed
@@ -199,15 +203,17 @@ skill's two video references.
 
 This operation requires an account API key and document ownership. Publish with
 authentication first and retain the returned document `id`. For a real
-explainer, author a modular `video.project.json` plus one HTML/CSS/JS module per
-scene. A narrated project must include measured audio and exact word/phrase
-cues; the narration is the timing authority, never an estimate. Then resolve
+explainer, author VideoProject v2: a modular `video.project.json` plus one
+HTML/CSS/JS module per scene using stable `data-hv-id` targets. A narrated
+project includes final measured audio, normalized word timings, semantic
+captions, and exact cue ownership; narration is timing authority. Then resolve
 this skill's root directory and run:
 
     <skill-root>/scripts/video.sh build ./video-project
     <skill-root>/scripts/video.sh check ./video-project
     <skill-root>/scripts/video.sh audit ./video-project
     <skill-root>/scripts/video.sh publish ./video-project \
+      --project-id <persistent-project-id-if-queued> \
       --document <id> \
       --prompt "Animate the three key ideas as a calm editorial explainer" \
       --provider codex --quality standard
@@ -222,19 +228,47 @@ is released:
     npx @html-docs/cli video <id> ./video-project \
       --prompt "Animate the three key ideas" --provider claude
 
-Optional flags: `--title`, `--after`, `--quality` (`draft`, `standard`,
+Optional flags: `--project-id`, `--title`, `--after`, `--quality` (`draft`, `standard`,
 `high`), `--model`, `--output`, `--api-key`, and `--base-url`. Canvas size and
 duration live in the composition itself. The response includes `share_url`,
 `video_url`, `poster_url`, `compositionId`, and `inserted_region_key`.
 `share_url` is the preferred handoff: it is the stable, short HTML Docs player
-at `/v/<code>`. Keep `video_url` as the raw MP4 fallback.
+at `/v/<code>`. It plays the live composition against master audio with
+captions, transcript, chapters, speed, and deterministic seeking. Keep
+`video_url` as the raw MP4 fallback/export.
 
 Do not manually call the prepare endpoint without completing the signed uploads;
 the renderer wrapper owns that two-step protocol. On success, verify the video
 region and the public `share_url`. Share the document URL too only when the
 surrounding document is part of the requested experience.
 
-## 4. Read a document
+## 4. Generate a source-grounded course and learning site
+
+Read **[references/html-course.md](references/html-course.md)** before course
+work. The default is fully automatic: normalize source, design the module map,
+author rich lesson pages and one explanatory VideoProject v2 per lesson,
+produce final audio/captions/checks, run every audit, and upload a private
+preview. Do not pause for storyboard or voice approval unless the user asks.
+Never publish publicly without explicit instruction.
+
+    <skill-root>/scripts/video.sh course init <source> \
+      --output ./course-project --title "Course title"
+    <skill-root>/scripts/video.sh course build ./course-project
+    <skill-root>/scripts/video.sh course audit ./course-project
+    <skill-root>/scripts/video.sh course preview ./course-project
+    <skill-root>/scripts/video.sh course publish ./course-project
+
+The CLI normalizes, compiles, validates, renders, synchronizes, and publishes;
+it does not write the curriculum. The current agent must replace the scaffold
+with a real evidence graph, course spine, lesson prose, locked narration,
+cue-directed storyboards, scene modules, and grounded checks.
+
+For source changes, run `course diff` and `course refresh`, regenerate only
+affected lessons, preserve stable-ID overrides that still apply, resolve
+conflicts in Studio, audit again, and push a new private version. Publication
+of the refreshed version is always separate.
+
+## 5. Read a document
 
 From a link: `/d/<id>?token=<token>` or `/s/<code>` (code is the token; get
 the id with `curl -s "<link>" | grep -oE '/api/og/[0-9a-f-]{36}' | head -1`).
@@ -248,7 +282,7 @@ Returns `{ title, html_content, regions, visibility, updated_at }`.
 `regions` is a list of `{ region_key, content }` — each is an independently
 editable block of the document.
 
-## 5. Edit a document
+## 6. Edit a document
 
 **Edit one region** (preserves comment anchors — preferred):
 
@@ -262,7 +296,7 @@ editable block of the document.
       -H 'x-doc-token: <token>' \
       --data-binary @new.html
 
-## 6. Review and comment
+## 7. Review and comment
 
 List existing comments:
 
@@ -293,7 +327,7 @@ Edit or delete your own comments:
     curl -s -X PATCH .../comments/<id> -d '{"content":"Updated"}'
     curl -s -X DELETE .../comments/<id>
 
-## 7. Version history
+## 8. Version history
 
     GET  /api/v1/docs/<id>/versions              — list versions
     POST /api/v1/docs/<id>/versions               — capture {"name":"…"}
@@ -301,7 +335,7 @@ Edit or delete your own comments:
 
 Every edit auto-snapshots the prior state.
 
-## 8. Convert a PDF, and export a polished PDF
+## 9. Convert a PDF, and export a polished PDF
 
 Full guide: **[references/pdf.md](references/pdf.md)**. The PDF round-trip has
 two directions — both aim for a *designed* document, never a flat reflow.
