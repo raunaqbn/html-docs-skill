@@ -222,18 +222,39 @@ shared visual language, not one template.
 
 ## Audio and captions
 
-The voiceover is final before scene durations are final. Provider choice is
-secondary to three requirements: clear pronunciation, acceptable voice
-quality, and exact timing metadata.
+The final voiceover owns scene duration. Provider choice is secondary to clear
+pronunciation, appropriate teaching delivery, and exact timing metadata.
 
-- Local-first: Kokoro is a strong small open-source TTS default when installed.
-- Higher consistency: a hosted TTS provider may be used when the user permits
-  it and voice quality matters more than offline operation.
-- Timing: use native word timestamps when supplied; otherwise align the final
-  audio locally. Never infer cue timing from character counts for a final.
+- Choose a provider-neutral profile: `precise-engineer` for technical material,
+  `gentle-guide` for sensitive material, `warm-teacher` for general education,
+  or `energetic-coach` for motivational practice. Explicit choice wins.
+- Generate scene-sized segments, but include neighboring text/context when the
+  provider supports it so prosody does not reset at every cut.
+- Keep `spokenText`, `displayText`, pronunciation entries, and delivery
+  direction separate. Do not ask TTS to speak bracketed direction.
+- Prefer provider-native timestamps. ElevenLabs character alignment must be
+  converted to exact normalized word ranges. HeyGen word timestamps can be
+  consumed directly.
+- For Kokoro/custom providers, forced-align the locked script against the final
+  audio. Never use an unconstrained transcript as timing truth.
+- Add 200 ms pre-roll and 600 ms settled post-roll mechanically. Do not
+  time-stretch speech to an estimated storyboard.
+- Assemble one master near −16 LUFS / −1 dBTP and remove boundary clicks.
+- Keep music off for courses unless it serves a clear purpose; if used, mix it
+  far below narration and duck it during speech.
+- Back-check script coverage and pronunciation, especially names, code
+  identifiers, and domain terms. Regenerate or surface anomalies.
 
-Captions are a separate overlay track. Do not repeat full narration sentences
-as scene copy. Reserve the bottom 12–17% if captions will be added.
+Captions derive from the exact same normalized word track as cues:
+
+- Two-to-six words per group, using phrase structure and pauses.
+- One group active at a time with active-word highlighting.
+- Bottom 17% reserved in every scene.
+- Editable HTML track plus WebVTT and SRT.
+- Default on in the live player and captioned MP4; clean export is optional.
+
+Do not repeat full narration as scene copy. Scene labels are concise visual
+anchors; captions carry the spoken wording.
 
 ## Contact-sheet review
 

@@ -1,6 +1,10 @@
 # html-docs
 
-**HTML publishing and local HTML-video generation for AI agents.** Publish sites, dashboards, and documents to [html-docs.com](https://www.html-docs.com), then let the current Codex or Claude session author modular, cue-synced HTML explainers, audit them visually, render locally, and embed the MP4.
+**HTML publishing, explanatory video, and source-grounded course generation for
+AI agents.** Publish sites and documents to
+[html-docs.com](https://www.html-docs.com), then let the current Codex or Claude
+session author cue-synced HTML explainers or complete learning sites, audit
+them, render locally, and open them in Guided Studio.
 
 ```
 npx @html-docs/cli publish dashboard.html
@@ -71,8 +75,8 @@ mkdir -p ~/.claude/skills
 cp -R /tmp/html-docs-skill/html-docs ~/.claude/skills/html-docs
 ```
 
-Copy the whole `html-docs` directory, not only `SKILL.md`; generated video
-support also uses `references/html-video.md` and `scripts/video.sh`.
+Copy the whole `html-docs` directory, not only `SKILL.md`; video/course support
+also uses the `references/` library and `scripts/video.sh`.
 
 ## Usage
 
@@ -121,6 +125,23 @@ npx @html-docs/cli video <doc-id> ./video-project \
 When using the installed skill directly, its `scripts/video.sh` wrapper prefers
 a local HTML Docs checkout (including `~/projects/html-docs`) and falls back to
 `@html-docs/html-video` once that renderer package is published.
+
+### Generate a private course preview
+
+```bash
+html-docs/scripts/video.sh course init ./source \
+  --output ./course-project --title "Course title"
+html-docs/scripts/video.sh course build ./course-project
+html-docs/scripts/video.sh course audit ./course-project
+html-docs/scripts/video.sh course preview ./course-project
+html-docs/scripts/video.sh course publish ./course-project
+```
+
+The CLI handles source snapshots, deterministic compilation, validation,
+rendering, diffing, and sync. The active agent authors the curriculum, lesson
+pages, scripts, storyboards, semantic scenes, voice/captions, and checks.
+Automatic runs create private previews; public or unlisted publishing is
+explicit.
 
 ### Direct curl (no install needed)
 
