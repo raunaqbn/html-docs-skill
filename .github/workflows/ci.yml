@@ -1,0 +1,57 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.13.1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm check
+      - name: Validate the agent skill
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          source = Path("html-docs/SKILL.md").read_text()
+          assert source.startswith("---\n")
+          assert re.search(r"^name:\s*html-docs$", source, re.M)
+          assert re.search(r"^description:\s*.+", source, re.M)
+          print("Skill metadata is valid.")
+          PY
+      - name: Clean-tree naming gate
+        run: |
+          blocked_product="$(printf '%s%s' 'hyper' 'frames')"
+          blocked_attribute="$(printf '%s%s' 'data-hv' '-id')"
+          if git grep -Iin -e "$blocked_product" -e "$blocked_attribute" -- .; then
+            echo "A prohibited legacy name remains in the release tree."
+            exit 1
+          fi
+      - name: Dependency license inventory
+        run: pnpm licenses list --prod --json > /tmp/html-docs-licenses.json
+      - name: Verify package contents
+        run: |
+          npm pack --dry-run
+          pnpm --filter @html-docs/html-video pack --pack-destination /tmp
+          pnpm --filter @html-docs/player pack --pack-destination /tmp
+          pnpm --filter @html-docs/studio pack --pack-destination /tmp
+      - name: Scan committed content for secrets
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,0 +1,46 @@
+name: Publish packages
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  npm:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.13.1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm check
+      - name: Publish Producer
+        run: pnpm --filter @html-docs/html-video publish --access public --no-git-checks
+      - name: Publish Player
+        run: pnpm --filter @html-docs/player publish --access public --no-git-checks
+      - name: Publish Studio
+        run: pnpm --filter @html-docs/studio publish --access public --no-git-checks
+      - name: Publish CLI and skill
+        run: pnpm publish --access public --no-git-checks
+      - name: Summary
+        run: |
+          echo "### Published HTML Docs packages" >> "$GITHUB_STEP_SUMMARY"
+          echo "- @html-docs/html-video" >> "$GITHUB_STEP_SUMMARY"
+          echo "- @html-docs/player" >> "$GITHUB_STEP_SUMMARY"
+          echo "- @html-docs/studio" >> "$GITHUB_STEP_SUMMARY"
+          echo "- @html-docs/cli" >> "$GITHUB_STEP_SUMMARY"
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+    env:
+      NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
