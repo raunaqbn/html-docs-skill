@@ -12,13 +12,41 @@
 <h3 align="center">Point Codex or Claude at a folder, codebase, website, paper, PDF, document, or research topic.</h3>
 <p align="center">Get a source-grounded HTML document, narrated explainer video, or complete learning course—with citations, captions, editable scenes, and a shareable site.</p>
 
-## Install once
+## Should you use this?
+
+Use HTML Docs when the answer needs to **teach**, not merely exist:
+
+| Your situation | Ask for | Why |
+|---|---|---|
+| One difficult idea needs to click | **Document + video** | The page keeps the detail; the video builds the mental model. This is the best default. |
+| A folder or codebase contains several lessons | **Complete course** | The agent reorganizes the source into prerequisites, lessons, practice, checks, transcripts, and a learning site. |
+| Someone needs the short visual version | **Video** | You get a shareable Player with narration, synchronized captions, transcript, and MP4 fallback. |
+| You need a durable visual reference | **Document** | You get responsive HTML with diagrams, examples, source evidence, and collaboration. |
+
+For a quick factual answer or a throwaway note, ask your agent normally. Use
+this skill when source grounding, visual explanation, narration, presentation,
+or a reusable learning experience matters.
+
+This is not a separate chatbot. It is a production workflow installed into the
+Codex or Claude Code session you already use:
+
+```text
+your source → your agent + $html-docs → private page, Player, and Studio
+```
+
+## Start in sixty seconds
 
 ```bash
 npx skills add raunaqbn/html-docs-skill --skill html-docs -g
 ```
 
-Start a fresh Codex task or Claude Code session. Then ask in ordinary language:
+Then:
+
+1. Start a fresh Codex task or Claude Code session.
+2. Open it in the source folder, or give it a URL, PDF, document, or topic.
+3. Mention `$html-docs`, the audience, and what they should understand.
+
+For example:
 
 ```text
 Use $html-docs to turn this codebase into a private course for new engineers.
@@ -51,20 +79,20 @@ product mockups.
   <tr>
     <td width="50%">
       <img src="./assets/showcase/document-video-loop.gif" alt="A document becoming a live HTML explanation" width="100%" />
-      <h3>Document + video</h3>
-      <p>One agent authors the detailed page and the visual mental model. Review, revise, and share in the same context.</p>
+      <h3>From terminal to published</h3>
+      <p>The document preserves the launch brief and review context. The companion video teaches the workflow visually.</p>
     </td>
     <td width="50%">
       <img src="./assets/showcase/math-explainer-loop.gif" alt="A signed-rate mechanism developing as an explanatory diagram" width="100%" />
-      <h3>Explanatory motion</h3>
-      <p>Final narration timings own scene boundaries, visual cues, captions, and settled states.</p>
+      <h3>How two samples become velocity</h3>
+      <p>A formula becomes a concrete mental model with timed motion, captions, and a settled visual read.</p>
     </td>
   </tr>
   <tr>
     <td colspan="2">
       <img src="./assets/showcase/code-course-loop.gif" alt="A code lesson rendered as an explanatory course video" width="100%" />
-      <h3>Codebase → course</h3>
-      <p>Source evidence becomes an architecture model, rich lesson page, code walkthrough, narrated video, transcript, and grounded checks.</p>
+      <h3>Guarding a velocity estimator</h3>
+      <p>A defensive-programming lesson turns invalid timestamps and non-finite inputs into a visual contract learners can remember.</p>
     </td>
   </tr>
 </table>
