@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "id": "hello-video",
+  "title": "Hello HTML Video",
+  "width": 1280,
+  "height": 720,
+  "fps": 30,
+  "durationMs": 3000,
+  "html": "<section class=\"scene\"><div class=\"orb\"></div><p class=\"eyebrow\">HTML DOCS</p><h1>Ideas in motion.</h1><p class=\"sub\">Deterministic HTML, rendered frame by frame.</p></section>",
+  "css": ".scene{position:absolute;inset:0;display:grid;place-content:center;padding:96px;overflow:hidden;background:#faf9f5;color:#1a1915;font-family:system-ui,sans-serif}.orb{position:absolute;width:520px;height:520px;border-radius:50%;right:-80px;top:-140px;background:#f4ddd2}.eyebrow{position:relative;margin:0 0 20px;color:#8a3d22;font-size:28px;font-weight:700;letter-spacing:.16em}.scene h1{position:relative;margin:0;font-family:Georgia,serif;font-size:108px;line-height:1}.sub{position:relative;margin:36px 0 0;color:#4a4842;font-size:36px}",
+  "script": "window.__HTML_VIDEO__={renderFrame:function(ctx){var r=window.HtmlVideoRuntime;var intro=r.ease.outCubic(r.sceneProgress(ctx.timeMs,0,800));var sub=r.ease.outCubic(r.sceneProgress(ctx.timeMs,450,800));var orb=document.querySelector('.orb');var eyebrow=document.querySelector('.eyebrow');var title=document.querySelector('h1');var copy=document.querySelector('.sub');eyebrow.style.opacity=String(intro);title.style.opacity=String(intro);title.style.transform='translateY('+((1-intro)*38)+'px)';copy.style.opacity=String(sub);copy.style.transform='translateY('+((1-sub)*24)+'px)';orb.style.transform='translate('+((1-intro)*90)+'px,'+((1-intro)*-40)+'px) scale('+(0.75+intro*0.25)+')';}};",
+  "variables": [],
+  "assets": [],
+  "scenes": [{ "id": "intro", "label": "Title reveal", "startMs": 0, "durationMs": 3000, "track": 0 }]
+}

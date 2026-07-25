@@ -1,14 +1,15 @@
 {
   "name": "@html-docs/cli",
-  "version": "0.6.0",
-  "description": "Publish HTML and build source-grounded courses with cue-synced explanatory videos on html-docs.com.",
+  "version": "0.7.0",
+  "description": "Turn source material into beautiful HTML documents, explanatory videos, and learning courses.",
   "author": "Raunaq Naidu <raunaqbn@gmail.com>",
   "license": "MIT",
+  "packageManager": "pnpm@10.13.1",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/raunaqbn/html-docs-skill.git"
   },
-  "homepage": "https://www.html-docs.com/developers",
+  "homepage": "https://www.html-docs.com/agents",
   "keywords": [
     "mcp",
     "model-context-protocol",
@@ -36,5 +37,10 @@
   ],
   "engines": {
     "node": ">=18"
+  },
+  "scripts": {
+    "test": "pnpm --filter @html-docs/html-video test && pnpm --filter @html-docs/player test && pnpm --filter @html-docs/studio test",
+    "typecheck": "pnpm -r typecheck",
+    "check": "pnpm typecheck && pnpm test"
   }
 }

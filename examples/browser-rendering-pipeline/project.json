@@ -1,0 +1,32 @@
+{
+  "kind": "html-docs-launch-example",
+  "version": 1,
+  "mode": "document-video",
+  "title": "Inside the browser rendering pipeline",
+  "voiceProfile": "warm-teacher",
+  "sources": [
+    {
+      "id": "html-event-loop",
+      "uri": "https://html.spec.whatwg.org/multipage/webappapis.html#event-loops",
+      "authority": "WHATWG HTML Living Standard"
+    },
+    {
+      "id": "css-cascade",
+      "uri": "https://www.w3.org/TR/css-cascade-6/",
+      "authority": "W3C CSS Cascading and Inheritance"
+    },
+    {
+      "id": "cssom-view",
+      "uri": "https://drafts.csswg.org/cssom-view/",
+      "authority": "CSSWG CSSOM View"
+    }
+  ],
+  "teachingSpine": [
+    "Parse source into trees",
+    "Resolve style",
+    "Compute geometry",
+    "Paint display items",
+    "Composite layers",
+    "Present pixels"
+  ]
+}

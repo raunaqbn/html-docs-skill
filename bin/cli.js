@@ -167,11 +167,11 @@ const MCP_TOOLS = [
   },
   {
     name: 'generate_video',
-    description: 'Compile, audit, and render an agent-authored modular HTML-video project locally, upload it directly, and insert it into an owned document. The calling agent must author the project first.',
+    description: 'Compile, audit, render, and upload an agent-authored modular HTML-video project. Optionally insert it into an owned document; omit id for a standalone shareable video.',
     inputSchema: {
       type: 'object',
       properties: {
-        id:               { type: 'string', description: 'Owned document ID' },
+        id:               { type: 'string', description: 'Optional owned document ID. Omit for a standalone video.' },
         composition_path: { type: 'string', description: 'Local path to a modular video project directory, video.project.json, or legacy deterministic composition JSON' },
         prompt:           { type: 'string', description: 'What the video should communicate and how it should feel' },
         title:            { type: 'string', description: 'Optional video title' },
@@ -182,7 +182,66 @@ const MCP_TOOLS = [
         output:           { type: 'string', description: 'Optional path at which to keep the rendered MP4' },
         api_key:          { type: 'string', description: 'Optional account API key; falls back to configured credentials' },
       },
-      required: ['id', 'composition_path', 'prompt'],
+      required: ['composition_path', 'prompt'],
+    },
+  },
+  {
+    name: 'create_explanation_project',
+    description: 'Normalize a folder, repository, URL, document, PDF, or research topic into an inspectable private document, video, document-video, or course project. The active agent authors the content; this tool does not call a model.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        source:            { type: 'string', description: 'Local source path, URL, or research topic.' },
+        mode:              { type: 'string', enum: ['auto', 'document', 'video', 'document-video', 'course'], description: 'Desired output mode; defaults to auto.' },
+        output:            { type: 'string', description: 'Output project directory.' },
+        title:             { type: 'string', description: 'Project title.' },
+        audience:          { type: 'string', description: 'Intended learner audience.' },
+        teaching_outcome:  { type: 'string', description: 'The focused outcome learners should achieve.' },
+        voice_profile:     { type: 'string', enum: ['warm-teacher', 'gentle-guide', 'precise-engineer', 'energetic-coach'] },
+        research_topic:    { type: 'boolean', description: 'Treat source as a research topic instead of a path.' },
+        crawl:             { type: 'boolean', description: 'Crawl a same-origin website to depth two and at most 100 pages.' },
+      },
+      required: ['source'],
+    },
+  },
+  {
+    name: 'run_explanation_project',
+    description: 'Build, audit, diff, refresh, or privately publish an existing explanation or course project.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        command: { type: 'string', enum: ['build', 'audit', 'diff', 'refresh', 'publish'] },
+        project_path: { type: 'string', description: 'Local project directory or manifest path.' },
+        minimum_score: { type: 'number', description: 'Minimum audit score; defaults to 78.' },
+        visibility: { type: 'string', enum: ['private', 'unlisted', 'public'], description: 'Publication visibility. Private is the default.' },
+        api_key: { type: 'string', description: 'Optional API key for publication.' },
+      },
+      required: ['command', 'project_path'],
+    },
+  },
+  {
+    name: 'video_studio_context',
+    description: 'Read the exact selected scene, semantic element, timestamp, cue, source evidence, and screenshot context from Guided Studio.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        video_id: { type: 'string' },
+        api_key: { type: 'string', description: 'Optional account API key.' },
+      },
+      required: ['video_id'],
+    },
+  },
+  {
+    name: 'video_studio_requests',
+    description: 'List Guided Studio agent requests, or attach a new instruction to the current selection when message is provided.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        video_id: { type: 'string' },
+        message: { type: 'string' },
+        api_key: { type: 'string', description: 'Optional account API key.' },
+      },
+      required: ['video_id'],
     },
   },
 ];
@@ -259,14 +318,14 @@ async function mcpCallTool(name, args) {
       return res;
     }
     case 'generate_video': {
-      if (!args.id || !args.composition_path || !args.prompt) {
-        throw new Error('id, composition_path, and prompt are required');
+      if (!args.composition_path || !args.prompt) {
+        throw new Error('composition_path and prompt are required');
       }
       const key = args.api_key || getApiKey();
       if (!key) throw new Error('Video generation requires an account API key. Run html-docs auth first.');
       return runLocalVideoRenderer([
         'publish', args.composition_path,
-        '--document', args.id,
+        ...(args.id ? ['--document', args.id] : []),
         '--prompt', args.prompt,
         ...(args.title ? ['--title', args.title] : []),
         ...(args.after_region_key ? ['--after', args.after_region_key] : []),
@@ -274,6 +333,48 @@ async function mcpCallTool(name, args) {
         ...(args.provider ? ['--provider', args.provider] : []),
         ...(args.model ? ['--model', args.model] : []),
         ...(args.output ? ['--output', args.output] : []),
+      ], key);
+    }
+    case 'create_explanation_project': {
+      if (!args.source) throw new Error('source is required');
+      const source = args.research_topic || /^(?:https?:\/\/|topic:)/i.test(args.source)
+        ? args.source
+        : path.resolve(args.source);
+      return runLocalVideoRenderer([
+        'project', 'init', source,
+        '--mode', args.mode || 'auto',
+        ...(args.output ? ['--output', path.resolve(args.output)] : []),
+        ...(args.title ? ['--title', args.title] : []),
+        ...(args.audience ? ['--audience', args.audience] : []),
+        ...(args.teaching_outcome ? ['--teaching-outcome', args.teaching_outcome] : []),
+        ...(args.voice_profile ? ['--voice-profile', args.voice_profile] : []),
+        ...(args.research_topic ? ['--topic', args.source] : []),
+        ...(args.crawl ? ['--crawl'] : []),
+      ], args.api_key || getApiKey() || '');
+    }
+    case 'run_explanation_project': {
+      if (!args.command || !args.project_path) throw new Error('command and project_path are required');
+      const key = args.api_key || getApiKey() || '';
+      if (args.command === 'publish' && !key) throw new Error('Publication requires an account API key. Run html-docs auth first.');
+      return runLocalVideoRenderer([
+        'project', args.command, path.resolve(args.project_path),
+        ...(args.minimum_score ? ['--minimum-score', String(args.minimum_score)] : []),
+        ...(args.visibility ? ['--visibility', args.visibility] : []),
+      ], key);
+    }
+    case 'video_studio_context': {
+      if (!args.video_id) throw new Error('video_id is required');
+      const key = args.api_key || getApiKey();
+      if (!key) throw new Error('Studio context requires an account API key. Run html-docs auth first.');
+      return runLocalVideoRenderer(['studio', 'context', args.video_id], key);
+    }
+    case 'video_studio_requests': {
+      if (!args.video_id) throw new Error('video_id is required');
+      const key = args.api_key || getApiKey();
+      if (!key) throw new Error('Studio requests require an account API key. Run html-docs auth first.');
+      return runLocalVideoRenderer([
+        'studio', 'requests', args.video_id,
+        ...(args.message ? ['--message', args.message] : []),
       ], key);
     }
     default:
@@ -598,12 +699,32 @@ function runLocalVideoRenderer(rendererArgs, apiKey) {
   return JSON.parse(result.stdout.slice(jsonStart));
 }
 
+function runVideoRendererPassthrough(rendererArgs, apiKey) {
+  const localRepo = findLocalVideoRepo();
+  const command = localRepo ? 'pnpm' : (process.platform === 'win32' ? 'npx.cmd' : 'npx');
+  const commandArgs = localRepo
+    ? ['--dir', localRepo, '--filter', '@html-docs/html-video', 'cli', ...rendererArgs]
+    : ['-y', '--package', '@html-docs/html-video', 'html-docs-video', ...rendererArgs];
+  const result = spawnSync(command, commandArgs, {
+    stdio: 'inherit',
+    env: {
+      ...process.env,
+      ...(apiKey ? { HTMLDOCS_API_KEY: apiKey } : {}),
+      HTMLDOCS_BASE_URL: BASE_URL,
+    },
+  });
+  if (result.error) throw result.error;
+  if (result.status !== 0) throw new Error(`local project command exited with status ${result.status}`);
+}
+
 async function video() {
-  const docId = args[0];
-  const compositionPath = args[1] && !args[1].startsWith('--') ? path.resolve(args[1]) : '';
+  const standalone = args.includes('--standalone');
+  const docId = standalone ? '' : args[0];
+  const projectIndex = standalone ? 0 : 1;
+  const compositionPath = args[projectIndex] && !args[projectIndex].startsWith('--') ? path.resolve(args[projectIndex]) : '';
   let prompt = '', title = '', afterRegionKey = '', quality = 'standard';
   let provider = 'other-local-agent', model = '', output = '', apiKeyFlag = '';
-  for (let i = compositionPath ? 2 : 1; i < args.length; i++) {
+  for (let i = compositionPath ? projectIndex + 1 : projectIndex; i < args.length; i++) {
     if (args[i] === '--prompt' && args[i + 1]) prompt = args[++i];
     else if (args[i] === '--title' && args[i + 1]) title = args[++i];
     else if (args[i] === '--after-region' && args[i + 1]) afterRegionKey = args[++i];
@@ -613,8 +734,9 @@ async function video() {
     else if (args[i] === '--output' && args[i + 1]) output = path.resolve(args[++i]);
     else if (args[i] === '--api-key' && args[i + 1]) apiKeyFlag = args[++i];
   }
-  if (!docId || !compositionPath || !prompt.trim()) {
-    console.error('Usage: html-docs video <doc-id> <video-project|composition.json> --prompt <brief> [--provider codex|claude]');
+  if ((!standalone && !docId) || !compositionPath || !prompt.trim()) {
+    console.error('Usage: html-docs video <doc-id> <video-project> --prompt <brief>');
+    console.error('       html-docs video <video-project> --standalone --prompt <brief>');
     process.exit(1);
   }
   const apiKey = apiKeyFlag || getApiKey();
@@ -623,7 +745,7 @@ async function video() {
 
   const response = runLocalVideoRenderer([
     'publish', compositionPath,
-    '--document', docId,
+    ...(docId ? ['--document', docId] : []),
     '--prompt', prompt.trim(),
     '--quality', quality,
     '--provider', provider,
@@ -640,7 +762,26 @@ async function video() {
   console.error(`video:       ${response.video_url}`);
   console.error(`poster:      ${response.poster_url}`);
   console.error(`composition: ${response.compositionId}`);
-  console.error(`region:      ${response.inserted_region_key}`);
+  if (response.inserted_region_key) console.error(`region:      ${response.inserted_region_key}`);
+}
+
+async function project() {
+  const forwarded = [...args];
+  if (
+    forwarded[0] === 'init'
+    && forwarded[1]
+    && !forwarded[1].startsWith('--')
+    && !/^(?:https?:\/\/|topic:)/i.test(forwarded[1])
+  ) {
+    forwarded[1] = path.resolve(forwarded[1]);
+  }
+  runVideoRendererPassthrough(['project', ...forwarded], getApiKey() || '');
+}
+
+async function studio() {
+  const apiKey = getApiKey();
+  if (!apiKey) die('Studio commands require an account API key; run html-docs auth first');
+  runVideoRendererPassthrough(['studio', ...args], apiKey);
 }
 
 // ── install: auto-configure the MCP server into agent clients ──────
@@ -885,6 +1026,17 @@ Usage:
     --output <path>                   Keep the rendered MP4 at this path
     --api-key <key>                   Account API key (required)
 
+  html-docs video <project> --standalone --prompt <brief>
+                                      Render and publish a shareable video
+
+  html-docs project <command> ...     Source-to-document/video/course projects
+    init <source> --mode <mode>       auto, document, video, document-video, course
+    build|audit|preview|publish       Operate on a project directory
+    diff|refresh                      Refresh changed source dependencies
+
+  html-docs studio <command> <id>     Guided Studio agent bridge
+    context|requests|pull|push
+
   html-docs --mcp                    Start MCP server (JSON-RPC over stdio)
 
 Examples:
@@ -914,6 +1066,12 @@ switch (command) {
     break;
   case 'video':
     video().catch(e => die(e.message));
+    break;
+  case 'project':
+    project().catch(e => die(e.message));
+    break;
+  case 'studio':
+    studio().catch(e => die(e.message));
     break;
   case 'install':
     install().catch(e => die(e.message));

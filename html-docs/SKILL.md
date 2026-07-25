@@ -1,430 +1,192 @@
 ---
 name: html-docs
 description: >
-  Publish websites, dashboards, and documents to the web instantly; create,
-  edit, review, and comment on HTML pages; generate deterministic
-  HTML-authored videos with exact narration/caption synchronization; and turn
-  folders, documents, PDFs, URLs, or codebases into private source-grounded
-  courses with lesson sites and Guided Studio. Use
-  when asked to publish, host, deploy, share HTML, create a webpage or
-  dashboard, work with an html-docs.com link, add a generated motion graphic or
-  video to a document, or create a learning site. Inline JavaScript works in
-  published pages.
+  Turn a folder, codebase, website, HTML Docs link, PDF, document, pasted
+  material, or research topic into a polished HTML document, deterministic
+  narrated explainer video, combined document-and-video explanation, or
+  source-grounded learning course. Also publish, edit, review, comment on, and
+  share HTML pages at html-docs.com. Use when asked to explain, teach, document,
+  visualize, publish, host, create a course, generate an HTML video, or work
+  with an html-docs.com URL.
 ---
 
-# HTML Docs — Instant Web Publishing
+# HTML Docs
 
-Publish websites, dashboards, reports, and documents to a live URL in one
-command. Create, edit, review, and comment on pages at html-docs.com.
+Create the clearest useful explanation of the user’s source. Use the active
+Codex or Claude session to research, write, design, and author the artifacts.
+Use the local CLI only to normalize sources, compile, validate, render,
+synchronize, and publish. Never invoke a hidden authoring model.
 
-## Quick start — CLI
+## Choose the output
 
-Install nothing. One command to publish:
+Resolve an explicit user request first. Otherwise use `auto`:
 
-    npx @html-docs/cli publish page.html
-    # → https://www.html-docs.com/site/<slug>
-
-Custom slug:
-
-    npx @html-docs/cli publish page.html --slug my-dashboard
-    # → https://www.html-docs.com/site/my-dashboard
-
-Publish an entire directory (bundles into one page):
-
-    npx @html-docs/cli publish ./site/ --slug my-app
-
-Update an existing page:
-
-    npx @html-docs/cli update <id> page.html --token <token>
-
-Authenticate for permanent pages tied to your account:
-
-    npx @html-docs/cli auth
-
-## Quick start — curl (no install)
-
-Publish any HTML file with a single copy-paste command:
-
-    curl -sS -X POST https://www.html-docs.com/api/v1/docs \
-      -H 'Content-Type: text/html' --data-binary @page.html
-
-Returns a live URL instantly. Add a custom slug:
-
-    curl -sS -X POST https://www.html-docs.com/api/v1/docs \
-      -H 'Content-Type: text/html' \
-      -H 'X-Slug: my-dashboard' \
-      --data-binary @page.html
-    # → https://www.html-docs.com/site/my-dashboard
-
-No account, no API key, no dependencies.
-
-## MCP Server
-
-For MCP-compatible clients (Claude Code, Cursor, Windsurf, Cline, Codex),
-configure the server in one command — no manual JSON editing:
-
-    npx @html-docs/cli install            # auto-detects installed clients
-    npx @html-docs/cli install claude-code
-    npx @html-docs/cli install cursor --api-key hdk_your_key
-
-This writes the html-docs MCP server into the client's own config file
-(e.g. `~/.claude.json`, `~/.cursor/mcp.json`,
-`~/.codeium/windsurf/mcp_config.json`, or `~/.codex/config.toml`), preserving
-any servers already configured. Restart the client afterward to load the tools.
-
-To configure by hand instead, add this to your MCP config:
-
-    {
-      "mcpServers": {
-        "html-docs": {
-          "command": "npx",
-          "args": ["-y", "@html-docs/cli", "--mcp"]
-        }
-      }
-    }
-
-Available tools: publish, publish_file, update, read, comment, list_comments,
-generate_video. For video/course work, the active agent authors local project
-artifacts; neither the MCP tool nor CLI invokes a second hosted model.
-Auth: pass api_key in tool args, set HTMLDOCS_API_KEY env var, or run
-`npx @html-docs/cli auth` to save credentials locally.
-
-## 1. Create a document
-
-Build a self-contained HTML page — all CSS inline, no external deps — then:
-
-    curl -sS -X POST https://www.html-docs.com/api/v1/docs \
-      -H 'Content-Type: text/html' --data-binary @doc.html
-
-Also accepts `Content-Type: text/markdown` or JSON `{"html":"…","title":"…"}`.
-
-Response: `{ "id", "url", "token" }`. The `url` is the shareable link. Keep
-the `token` — it authorizes all subsequent operations on that doc.
-
-## Make it beautiful — the design system
-
-Don't ship plain HTML. **Every substantial doc should look intentionally designed
-for its content.** Full design system (creative brief, anti-slop rules,
-archetypes, component patterns, inline-SVG diagrams, motion):
-**[references/design-system.md](references/design-system.md) — read it before
-authoring any non-trivial doc.** Essentials:
-
-- **Answer the creative brief first:** purpose & audience · a metaphor (place/
-  object, not a format) · display + body typography · ONE dominant hue + accent ·
-  the one memorable signature · composition. The design flows from these.
-- **Anti-slop:** one dominant hue (not 5 balanced colors); backgrounds with
-  character (never flat stark white); hierarchy through dramatic scale; **lead
-  with visuals, not walls of text**; at most one CSS entrance; each doc differs
-  from the last.
-- **Pick an archetype** for layout DNA: report, dashboard, comparison,
-  architecture/flow, timeline/roadmap, graph, guide/FAQ, session-summary.
-- **Self-contained only:** inline CSS + inline `<svg>`; **no external CDNs/JS, no
-  charting libraries** — hand-author charts/diagrams as inline SVG or styled
-  HTML/CSS so they render in the shadow-DOM viewer and on mobile. Color-code
-  consistently (one color per component/layer + legend), label every box and
-  arrow, and prefer a few precise diagrams over one busy one.
-
-### The full reference library
-
-The design system is split across focused references. Read the one that fits
-what you're doing:
-
-- **[references/design-system.md](references/design-system.md)** — the core:
-  creative brief, typography & color systems, archetypes, component patterns,
-  diagrams, motion. Start here.
-- **[references/anti-slop.md](references/anti-slop.md)** — a catalog of the
-  tells that make a page look AI-generated, each with a detect-heuristic and a
-  fix. Run it as a linter before publishing.
-- **[references/design-dna.md](references/design-dna.md)** — when there's a
-  reference to match (a screenshot, a named site, a brand, a sibling doc):
-  extract its design DNA as a spec, then author to it.
-- **[references/design-commands.md](references/design-commands.md)** — a shared
-  vocabulary (`audit`, `polish`, `bolder`, `quieter`, `typeset`, `colorize`,
-  `illustrate`, `match`, `theme`…) for steering a doc, yourself or with the user.
-- **[references/effects.md](references/effects.md)** — the finishing layer:
-  CSS-only backgrounds, texture, depth, motion, and signature marks, with
-  copy-paste recipes by mood.
-- **[references/pdf.md](references/pdf.md)** — the PDF round-trip: turn a source
-  PDF into a *designed* doc (read → recover structure → re-author, not OCR
-  reflow), and export any doc to a well-paginated PDF (`/pdf` endpoint, print
-  CSS, page-break hooks, `?html=1` for Prince/WeasyPrint).
-
-A good default flow: read design-system.md, author from the creative brief,
-then `audit` against anti-slop.md and `polish` before you publish.
-
-## 2. Publish as a live website
-
-One POST gives you a hosted page — raw HTML served directly, no editor chrome:
-
-    curl -sS -X POST https://www.html-docs.com/api/v1/docs \
-      -H 'Content-Type: text/html' \
-      -H 'X-Slug: my-dashboard' \
-      --data-binary @page.html
-
-Instantly live at `https://www.html-docs.com/site/my-dashboard`.
-Omit `X-Slug` for an auto-generated slug.
-
-Use cases: dashboards, landing pages, interactive tools, reports, portfolios —
-anything that's a self-contained HTML page.
-
-Slug rules: 3-60 chars, lowercase letters/digits/hyphens, must start and end
-with a letter or digit. If the slug is taken, a random suffix is appended.
-
-Update a published site:
-
-    curl -sS -X PUT https://www.html-docs.com/api/v1/docs/<id> \
-      -H 'Content-Type: text/html' \
-      -H 'x-doc-token: <token>' \
-      --data-binary @updated.html
-
-Returns `{ id, url, siteUrl, slug }`. The hosted page updates instantly.
-
-**CORS proxy** — hosted pages that fetch external APIs can route through:
-
-    GET https://www.html-docs.com/api/proxy?url=<encoded-target-url>
-
-GET-only, 100 req/min, 10 MB max, 10 s timeout.
-
-## 3. Generate and embed an HTML video
-
-Use this when motion materially improves an owned document. **Read
-[references/html-video.md](references/html-video.md) before authoring, then read
-[references/video-scene-craft.md](references/video-scene-craft.md) for an
-explainer with three or more scenes.** The
-current Codex or Claude session writes deterministic, seek-driven
-HTML/CSS/JavaScript. Local Chromium and FFmpeg validate and render it; HTML Docs
-stores immutable versions, serves Guided Studio and the live player, and
-inserts a portable `<html-video>` block with a nested MP4 fallback.
-There is no separate hosted authoring model and no Vercel media renderer. This
-workflow is self-contained: do not load or depend on HyperFrames skills, project
-formats, runtimes, hosted rendering, or CLI commands. The directing rules needed
-for story, layout, motion, transitions, synchronization, and review live in this
-skill's two video references.
-
-This operation requires an account API key and document ownership. Publish with
-authentication first and retain the returned document `id`. For a real
-explainer, author VideoProject v2: a modular `video.project.json` plus one
-HTML/CSS/JS module per scene using stable `data-hv-id` targets. A narrated
-project includes final measured audio, normalized word timings, semantic
-captions, and exact cue ownership; narration is timing authority. Then resolve
-this skill's root directory and run:
-
-    <skill-root>/scripts/video.sh build ./video-project
-    <skill-root>/scripts/video.sh check ./video-project
-    <skill-root>/scripts/video.sh audit ./video-project
-    <skill-root>/scripts/video.sh publish ./video-project \
-      --project-id <persistent-project-id-if-queued> \
-      --document <id> \
-      --prompt "Animate the three key ideas as a calm editorial explainer" \
-      --provider codex --quality standard
-
-`audit` is not optional for a final: inspect `quality/contact-sheet.png` and
-fix every weak, clipped, repetitive, or narration-mismatched scene before
-rendering. The publish command enforces the same quality gate.
-
-The packaged CLI is an equivalent convenience wrapper once the renderer package
-is released:
-
-    npx @html-docs/cli video <id> ./video-project \
-      --prompt "Animate the three key ideas" --provider claude
-
-Optional flags: `--project-id`, `--title`, `--after`, `--quality` (`draft`, `standard`,
-`high`), `--model`, `--output`, `--api-key`, and `--base-url`. Canvas size and
-duration live in the composition itself. The response includes `share_url`,
-`video_url`, `poster_url`, `compositionId`, and `inserted_region_key`.
-`share_url` is the preferred handoff: it is the stable, short HTML Docs player
-at `/v/<code>`. It plays the live composition against master audio with
-captions, transcript, chapters, speed, and deterministic seeking. Keep
-`video_url` as the raw MP4 fallback/export.
-
-Do not manually call the prepare endpoint without completing the signed uploads;
-the renderer wrapper owns that two-step protocol. On success, verify the video
-region and the public `share_url`. Share the document URL too only when the
-surrounding document is part of the requested experience.
-
-## 4. Generate a source-grounded course and learning site
-
-Read **[references/html-course.md](references/html-course.md)** before course
-work. The default is fully automatic: normalize source, design the module map,
-author rich lesson pages and one explanatory VideoProject v2 per lesson,
-produce final audio/captions/checks, run every audit, and upload a private
-preview. Do not pause for storyboard or voice approval unless the user asks.
-Never publish publicly without explicit instruction.
-
-    <skill-root>/scripts/video.sh course init <source> \
-      --output ./course-project --title "Course title"
-    <skill-root>/scripts/video.sh course build ./course-project
-    <skill-root>/scripts/video.sh course audit ./course-project
-    <skill-root>/scripts/video.sh course preview ./course-project
-    <skill-root>/scripts/video.sh course publish ./course-project
-
-The CLI normalizes, compiles, validates, renders, synchronizes, and publishes;
-it does not write the curriculum. The current agent must replace the scaffold
-with a real evidence graph, course spine, lesson prose, locked narration,
-cue-directed storyboards, scene modules, and grounded checks.
-
-For source changes, run `course diff` and `course refresh`, regenerate only
-affected lessons, preserve stable-ID overrides that still apply, resolve
-conflicts in Studio, audit again, and push a new private version. Publication
-of the refreshed version is always separate.
-
-## 5. Read a document
-
-From a link: `/d/<id>?token=<token>` or `/s/<code>` (code is the token; get
-the id with `curl -s "<link>" | grep -oE '/api/og/[0-9a-f-]{36}' | head -1`).
-
-Authenticate with either `x-doc-token: <token>` or `Authorization: Bearer <key>`:
-
-    curl -s https://www.html-docs.com/api/v1/docs/<id> \
-      -H 'x-doc-token: <token>'
-
-Returns `{ title, html_content, regions, visibility, updated_at }`.
-`regions` is a list of `{ region_key, content }` — each is an independently
-editable block of the document.
-
-## 6. Edit a document
-
-**Edit one region** (preserves comment anchors — preferred):
-
-    curl -s -X PATCH https://www.html-docs.com/api/v1/docs/<id>/regions/<region_key> \
-      -H 'x-doc-token: <token>' \
-      -d '{"content":"<p>New HTML for this region</p>"}'
-
-**Replace the entire document** (re-derives all regions, orphans comment anchors):
-
-    curl -s -X PUT https://www.html-docs.com/api/v1/docs/<id> \
-      -H 'x-doc-token: <token>' \
-      --data-binary @new.html
-
-## 7. Review and comment
-
-List existing comments:
-
-    curl -s https://www.html-docs.com/api/v1/docs/<id>/comments \
-      -H 'x-doc-token: <token>'
-
-Add a comment:
-
-    curl -s -X POST https://www.html-docs.com/api/v1/docs/<id>/comments \
-      -H 'x-doc-token: <token>' \
-      -H 'x-agent-name: YourAgent' \
-      -d '{"content":"Your feedback","region_key":"region-abc","selected_text":"exact snippet"}'
-
-**Always include `selected_text`** — a short (2-8 word), exact, plain-text
-snippet from the region so the comment highlights visibly on the page.
-
-Reply to a comment thread:
-
-    -d '{"content":"Reply text","parent_id":"<comment-id>"}'
-
-Resolve/unresolve a thread:
-
-    curl -s -X POST .../comments/<id>/resolve \
-      -d '{"resolved": true}'
-
-Edit or delete your own comments:
-
-    curl -s -X PATCH .../comments/<id> -d '{"content":"Updated"}'
-    curl -s -X DELETE .../comments/<id>
-
-## 8. Version history
-
-    GET  /api/v1/docs/<id>/versions              — list versions
-    POST /api/v1/docs/<id>/versions               — capture {"name":"…"}
-    POST /api/v1/docs/<id>/versions/<vid>/restore  — roll back
-
-Every edit auto-snapshots the prior state.
-
-## 9. Convert a PDF, and export a polished PDF
-
-Full guide: **[references/pdf.md](references/pdf.md)**. The PDF round-trip has
-two directions — both aim for a *designed* document, never a flat reflow.
-
-**PDF in → designed doc.** You can read a PDF directly. Don't dump its text into
-`<p>` tags or screenshot its pages — *re-author* it: recover the heading
-hierarchy, tables, and figures, pick an archetype (design-system.md), redraw
-bitmap diagrams as inline SVG where feasible, and design for the content.
-Preserve every fact, number, link, and table; invent nothing. Then publish.
-(Reproduce documents of record — contracts, filings — faithfully instead.)
-
-**Doc → PDF out.** Export any hosted doc:
-
-    GET /api/v1/docs/:id/pdf        # ?format=letter|a4|legal, ?landscape=1, ?html=1
-
-Rendered with headless Chromium for full visual fidelity. `?html=1` returns the
-print-ready HTML so you can run your own engine (WeasyPrint, Prince) for
-book-grade paged media.
-
-**For a great PDF, author a print edition — don't just print the screen doc.**
-The on-screen document and the PDF want different things. The highest-quality
-path is to **transform the doc into a second HTML rendition authored for the
-page** and export *that*:
-
-- A real **cover/title block** sized to ~one page, not a full-bleed scroll hero.
-- A **print type scale** (slightly smaller body, tighter leading) and ink-on-
-  paper contrast instead of screen tints.
-- **Sections that begin on fresh pages** where it aids reading (chapter starts),
-  using the page-break hooks below.
-- **Figures and tables fitted to the page box** (`max-width: 100%`, repeating
-  table headers), and on-screen-only chrome dropped.
-- No motion, no hover states, nothing that only makes sense scrolling.
-
-Think of it as two outputs from one source: the screen edition (live, interactive)
-and the print edition (paginated, typeset for paper). The export injects a print
-stylesheet as a safety net — orphan/widow control, `break-inside: avoid` on
-figures/tables/code, repeating `thead`, color-accurate backgrounds — but a
-purpose-built print edition is what makes a PDF look *intentionally typeset*.
-
-**Page-break hooks** honored on export (use deliberately):
-
-| Hook | Effect |
-|---|---|
-| `page-break-before` / `data-page-break="before"` | new page before element |
-| `page-break-after` / `data-page-break="after"` | break page after element |
-| `page-break-avoid` / `data-keep-together` | keep element whole on one page |
-| `no-print` / `screen-only` / `data-print-hide` | hide element in the PDF |
-
-## Authentication
-
-Two auth methods:
-- **Doc token**: `x-doc-token: <token>` — scoped to one document
-- **API key**: `Authorization: Bearer <key>` — works on all docs you own; get one at html-docs.com → API keys
-
-### Saving an API key
-
-1. Sign up at https://www.html-docs.com/auth/login
-2. Create a key at https://www.html-docs.com/settings/api-keys — it starts with `hdk_`
-3. Save it with `npx @html-docs/cli auth`, or set `export HTMLDOCS_API_KEY=hdk_your_key`,
-   or write it to `~/.htmldocs/credentials` (chmod 600).
-
-**After receiving an API key, save it immediately — don't ask the user to do it manually.**
-
-## Limits
-
-- Max body size: 2 MB
-- Rate limits: 600 reads / 60 writes per 60-second window per credential
-
-## Full API reference
-
-    curl https://www.html-docs.com/api/v1
-
-Returns the live machine-readable contract with all endpoints. See also
-[references/api.md](references/api.md).
-
-| Method | Path | Purpose |
+| Mode | Choose when | Deliver |
 |---|---|---|
-| POST | /api/v1/docs | Create a new doc |
-| GET | /api/v1/docs/:id | Read doc + regions |
-| PUT | /api/v1/docs/:id | Replace entire doc |
-| PATCH | /api/v1/docs/:id/regions/:key | Edit one region |
-| GET | /api/v1/docs/:id/comments | List comments |
-| POST | /api/v1/docs/:id/comments | Add comment |
-| PATCH | /api/v1/docs/:id/comments/:cid | Edit comment |
-| DELETE | /api/v1/docs/:id/comments/:cid | Delete comment |
-| POST | /api/v1/docs/:id/comments/:cid/resolve | Resolve thread |
-| GET | /api/v1/docs/:id/versions | List versions |
-| POST | /api/v1/docs/:id/versions | Capture version |
-| POST | /api/v1/docs/:id/versions/:vid/restore | Restore version |
-| GET | /api/v1/docs/:id/pdf | Export as PDF (`?format=`, `?landscape=1`, `?html=1`) |
-| POST | /api/v1/docs/:id/videos | Register a locally authored composition and obtain one-use upload tokens (owner key required) |
-| POST | /api/v1/docs/:id/videos/:compositionId/complete | Verify local uploads and insert the `<video>` block |
+| `document` | Detail, scanning, reference, data, or collaboration matters | Designed responsive HTML document |
+| `video` | Motion, sequence, mechanism, or narration is the main value | Captioned deterministic HTML video |
+| `document-video` | A focused subject benefits from both explanation and reference | Rich document with embedded live video |
+| `course` | The source has several learning outcomes or the user asks for training | Learning site with modules, lesson pages, videos, checks, and progress |
+| `auto` | The user leaves the format open | `document-video` for one focused outcome; `course` for several cumulative outcomes |
+
+State the chosen mode in one short working update, then continue. Do not stop
+for storyboard or voice approval unless the user requests an approval gate.
+Finish automatic work as a private preview. Publish publicly or unlisted only
+after explicit instruction.
+
+## Start from any source
+
+Classify the input before authoring:
+
+- HTML Docs document or folder: read it through the API.
+- Local document, PDF, HTML, Markdown, or text: recover its structure and facts.
+- Directory or Git repository: respect ignore rules; exclude credentials,
+  dependencies, build output, binaries, and VCS internals.
+- URL: capture the requested page. For a site-level request, crawl same-origin
+  links to depth two and at most 100 pages unless the user sets another bound.
+- Research topic: perform deep research with primary and authoritative sources.
+  Freeze a source manifest before writing.
+- Pasted material: preserve it as a source record rather than treating it as
+  unsupported background knowledge.
+
+Read [references/source-grounding.md](references/source-grounding.md) for source
+normalization, research, privacy, evidence IDs, and refresh rules.
+
+## Universal production loop
+
+1. **Define mastery.** Identify the audience, prerequisites, confusion gap,
+   desired capability, thesis, mechanism, evidence, and limits.
+2. **Ground claims.** Create stable source/evidence records. Every substantive
+   claim and knowledge-check answer must cite evidence.
+3. **Design the explanation.** Build a cumulative teaching spine. Do not follow
+   source order when another sequence teaches better.
+4. **Choose a visual language.** Set typography, dominant color, contrast,
+   diagram grammar, layout rhythm, and one memorable visual signature.
+5. **Author the selected outputs.** Derive the page and video from the same
+   lesson/evidence model without duplicating them: the page is the reference;
+   the video teaches the mental model.
+6. **Audit.** Check facts, citations, readability, responsive behavior,
+   accessibility, visual quality, narration coverage, cue ownership, captions,
+   deterministic seeking, and contact sheets.
+7. **Refine until clean.** Fix every failing audit and every visibly weak scene.
+8. **Publish privately.** Return the private document/course link and the stable
+   video player link. Mention raw MP4 only as a fallback or requested download.
+
+## Document workflow
+
+Read [references/design-system.md](references/design-system.md) before any
+substantial document. Use [references/anti-slop.md](references/anti-slop.md) as
+the final visual linter. Use inline CSS and inline SVG; freeze assets locally.
+
+Publish:
+
+```bash
+npx @html-docs/cli publish page.html
+npx @html-docs/cli publish ./site --slug my-site
+```
+
+Authenticate owned work once:
+
+```bash
+npx @html-docs/cli auth
+```
+
+Read [references/api.md](references/api.md) when editing regions, commenting,
+versioning, or using document APIs. Read [references/pdf.md](references/pdf.md)
+for PDF import or export.
+
+## Video workflow
+
+Read both:
+
+- [references/html-video.md](references/html-video.md) for project format,
+  narration, timing, captions, compilation, rendering, and publication.
+- [references/video-scene-craft.md](references/video-scene-craft.md) for
+  explanatory scene grammar, layout rhythm, cue choreography, and visual review.
+
+For a narrated explainer:
+
+```bash
+<skill-root>/scripts/video.sh build ./video-project
+<skill-root>/scripts/video.sh check ./video-project
+<skill-root>/scripts/video.sh audit ./video-project
+<skill-root>/scripts/video.sh render ./video-project --output ./final.mp4
+```
+
+For a document-linked video:
+
+```bash
+<skill-root>/scripts/video.sh publish ./video-project \
+  --document <document-id> \
+  --prompt "Teach the central mechanism clearly" \
+  --provider codex
+```
+
+For a standalone video, omit `--document` after the standalone video API is
+available in the installed CLI release. Always prefer the stable `/v/<code>`
+player link over the raw storage URL.
+
+## Course workflow
+
+Read [references/html-course.md](references/html-course.md). Then:
+
+```bash
+<skill-root>/scripts/video.sh course init <source> \
+  --output ./course-project --title "Course title"
+<skill-root>/scripts/video.sh course build ./course-project
+<skill-root>/scripts/video.sh course audit ./course-project
+<skill-root>/scripts/video.sh course preview ./course-project
+<skill-root>/scripts/video.sh course publish ./course-project
+```
+
+The scaffold is not the course. Replace it with a real evidence graph, course
+map, lesson pages, locked narration, cue-directed storyboards, semantic scene
+modules, captions, checks, and source dependencies before building.
+
+For changed sources:
+
+```bash
+<skill-root>/scripts/video.sh course diff ./course-project
+<skill-root>/scripts/video.sh course refresh ./course-project
+```
+
+Regenerate only affected lessons, preserve surviving semantic overrides, audit
+again, and create a new private version. Never replace the published version
+automatically.
+
+## Guided Studio
+
+Use Studio after a private version exists:
+
+```bash
+<skill-root>/scripts/video.sh studio context <video-id>
+<skill-root>/scripts/video.sh studio requests <video-id>
+```
+
+Treat a Studio selection as precise source context: composition version, scene,
+timestamp, semantic element ID, bounds, text, evidence, and surrounding cue.
+Apply direct layout/text/color changes as structured overrides. Apply narration,
+voice, evidence, or generative scene changes in the local project, audit, then
+push a new immutable version.
+
+## Publication and authentication
+
+- Anonymous documents can be published with `curl` or the CLI.
+- Owned videos, courses, edits, and durable publication require
+  `HTMLDOCS_API_KEY` or credentials saved by `npx @html-docs/cli auth`.
+- Keep provider keys local. Never upload TTS keys or put them in a project
+  bundle.
+- Keep source projects and diagnostics private. Only published runtime bundles,
+  posters, and media should be public.
+
+Machine-readable API:
+
+```bash
+curl https://www.html-docs.com/api/v1
+```
+
+Human documentation:
+
+- https://www.html-docs.com/agents
+- https://www.html-docs.com/developers
+- https://www.html-docs.com/showcase

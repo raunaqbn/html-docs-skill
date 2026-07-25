@@ -1,134 +1,157 @@
-# html-docs
+<div align="center">
+  <img src="./assets/readme-hero.svg" alt="HTML Docs turns one source into a document, video, or complete course" width="100%" />
+</div>
 
-**HTML publishing, explanatory video, and source-grounded course generation for
-AI agents.** Publish sites and documents to
-[html-docs.com](https://www.html-docs.com), then let the current Codex or Claude
-session author cue-synced HTML explainers or complete learning sites, audit
-them, render locally, and open them in Guided Studio.
+<p align="center">
+  <a href="https://www.npmjs.com/package/@html-docs/cli"><img alt="npm" src="https://img.shields.io/npm/v/@html-docs/cli?color=d8ff45&labelColor=151713"></a>
+  <a href="./LICENSE"><img alt="MIT license" src="https://img.shields.io/badge/license-MIT-d8ff45?labelColor=151713"></a>
+  <a href="https://www.html-docs.com/showcase"><img alt="Showcase" src="https://img.shields.io/badge/watch-the_showcase-f7f6ef?labelColor=151713"></a>
+  <a href="https://www.html-docs.com/agents"><img alt="Agent guide" src="https://img.shields.io/badge/agent-guide-f7f6ef?labelColor=151713"></a>
+</p>
 
-```
-npx @html-docs/cli publish dashboard.html
-→ https://www.html-docs.com/site/my-dashboard-a7k2
-```
+<h3 align="center">Point Codex or Claude at a folder, codebase, website, paper, PDF, document, or research topic.</h3>
+<p align="center">Get a source-grounded HTML document, narrated explainer video, or complete learning course—with citations, captions, editable scenes, and a shareable site.</p>
 
-## What makes this different
-
-1. **Inline JavaScript works.** Chart.js, D3, Plotly, SPAs — your scripts survive the publish pipeline.
-2. **Every hosted page can become an editable document.** Real-time collaboration, inline comments, version history — the full html-docs editing layer, one click away.
-3. **One API, two outputs.** Get a hosted URL for sharing AND an editor URL for collaboration.
-
-## Installation
-
-### As an npx command (recommended)
-
-```bash
-npx @html-docs/cli publish page.html
-```
-
-### As an MCP server (Claude Code, Cursor, Windsurf, Cline, Codex)
-
-One command — auto-detects your installed clients and wires in the server:
-
-```bash
-npx @html-docs/cli install
-```
-
-Or target a specific client (and optionally bake in your API key):
-
-```bash
-npx @html-docs/cli install claude-code
-npx @html-docs/cli install cursor --api-key hdk_your_key
-```
-
-This writes the html-docs MCP server into the client's own config file
-(`~/.claude.json`, `~/.cursor/mcp.json`, `~/.codeium/windsurf/mcp_config.json`,
-`~/.codex/config.toml`, or Cline's settings), preserving any servers you
-already have. Restart the client to load the tools.
-
-Prefer to edit JSON by hand? Add this to your MCP config:
-
-```json
-{
-  "mcpServers": {
-    "html-docs": {
-      "command": "npx",
-      "args": ["-y", "@html-docs/cli", "--mcp"]
-    }
-  }
-}
-```
-
-This gives your agent native `publish`, `update`, `read`, `comment`,
-`list_comments`, and `generate_video` tools — no skill file needed.
-
-### As an agent skill (Claude Code, Cursor, Codex, etc.)
+## Install once
 
 ```bash
 npx skills add raunaqbn/html-docs-skill --skill html-docs -g
 ```
 
-Or manually:
+Start a fresh Codex task or Claude Code session. Then ask in ordinary language:
 
-```bash
-git clone https://github.com/raunaqbn/html-docs-skill.git /tmp/html-docs-skill
-mkdir -p ~/.claude/skills
-cp -R /tmp/html-docs-skill/html-docs ~/.claude/skills/html-docs
+```text
+Use $html-docs to turn this codebase into a private course for new engineers.
 ```
 
-Copy the whole `html-docs` directory, not only `SKILL.md`; video/course support
-also uses the `references/` library and `scripts/video.sh`.
+No hosted authoring model is hidden behind the command. Your current agent
+researches, writes, designs, and authors the project. The open local tools
+normalize sources, compile scenes, synchronize narration, audit frames, render
+media, and publish a private preview.
 
-## Usage
+## Ask for the outcome you need
 
-### Publish
+| Output | Prompt |
+|---|---|
+| **Document** | `Use $html-docs to research this topic and make a beautiful, cited visual document.` |
+| **Video** | `Use $html-docs to turn this URL into a five-minute captioned explainer video.` |
+| **Document + video** | `Use $html-docs to explain this paper with a rich page and embedded narrated video.` |
+| **Complete course** | `Use $html-docs to turn this folder into a private course with lessons, videos, checks, and progress.` |
+| **Auto** | `Use $html-docs to choose the clearest format for explaining this source.` |
 
-```bash
-# Anonymous (zero friction, no account needed)
-npx @html-docs/cli publish page.html
+Automatic runs stay private. Public or unlisted publication is a separate,
+explicit action.
 
-# With a custom slug
-npx @html-docs/cli publish dashboard.html --slug quarterly-report
+## Built with HTML, voice, and evidence
 
-# Authenticated (permanent, in your dashboard)
-npx @html-docs/cli publish dashboard.html --api-key hdk_your_key
+These lightweight loops are frames from real HTML Docs renderer output—not
+product mockups.
 
-# Publish a directory (looks for index.html)
-npx @html-docs/cli publish ./my-site/
+<table>
+  <tr>
+    <td width="50%">
+      <img src="./assets/showcase/document-video-loop.gif" alt="A document becoming a live HTML explanation" width="100%" />
+      <h3>Document + video</h3>
+      <p>One agent authors the detailed page and the visual mental model. Review, revise, and share in the same context.</p>
+    </td>
+    <td width="50%">
+      <img src="./assets/showcase/math-explainer-loop.gif" alt="A signed-rate mechanism developing as an explanatory diagram" width="100%" />
+      <h3>Explanatory motion</h3>
+      <p>Final narration timings own scene boundaries, visual cues, captions, and settled states.</p>
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2">
+      <img src="./assets/showcase/code-course-loop.gif" alt="A code lesson rendered as an explanatory course video" width="100%" />
+      <h3>Codebase → course</h3>
+      <p>Source evidence becomes an architecture model, rich lesson page, code walkthrough, narrated video, transcript, and grounded checks.</p>
+    </td>
+  </tr>
+</table>
+
+Explore the live Player, course pages, source projects, and Studio artifacts in
+the [HTML Docs showcase](https://www.html-docs.com/showcase).
+
+Reproduction briefs and portable source ledgers live in
+[`examples/`](./examples): codebase → course, website → document + video, and
+research topic → course.
+
+## The production loop
+
+```text
+folder · repo · URL · PDF · document · topic
+                      │
+                      ▼
+          source snapshot + evidence graph
+                      │
+                      ▼
+        course map · lesson model · design system
+                      │
+           ┌──────────┴──────────┐
+           ▼                     ▼
+    rich HTML page        locked narration
+                                 │
+                                 ▼
+                     timed words + visual cues
+                                 │
+                                 ▼
+                  deterministic HTML scene modules
+                                 │
+                                 ▼
+                  audit · Player · Studio · MP4
 ```
 
-### Authenticate
+The page and video share one evidence model but serve different jobs: the page
+is the detailed reference; the video teaches the core mechanism visually.
+
+## Why the synchronization holds
+
+- Generate or record final audio before final scene timing.
+- Prefer provider-native word timestamps.
+- Forced-align the locked transcript when timestamps are unavailable.
+- Assign every spoken word to exactly one cue and scene.
+- Give every cue one or more same-scene `data-html-video-id` targets.
+- Derive captions, chapters, scenes, and visual timing from the same word track.
+- Seek Chromium to explicit timestamps; never depend on wall clocks or
+  self-running animation.
+- Compare repeated same-time captures and inspect cue/scene contact sheets.
+
+Voice profiles are provider-neutral: `warm-teacher`, `gentle-guide`,
+`precise-engineer`, and `energetic-coach`. ElevenLabs is supported through
+bring-your-own-key; Kokoro is the offline fallback. Provider keys stay local.
+
+## The open product
+
+| Package | Responsibility |
+|---|---|
+| [`html-docs/`](./html-docs) | Installable agent skill, source/research workflow, document design system, video direction, and course production |
+| [`@html-docs/cli`](./bin/cli.js) | Publishing, authentication, MCP server, project orchestration, and agent installation |
+| [`@html-docs/html-video`](./packages/html-video) | Portable project schemas, source snapshots, audio/caption timing, deterministic runtime, audits, Chromium capture, FFmpeg rendering, and sync |
+| [`@html-docs/player`](./packages/player) | Dependency-free `<html-docs-video>` web component with live-player and MP4 fallback |
+| [`@html-docs/studio`](./packages/studio) | Evidence-aware educational Studio with live preview, waveform, cue/caption lanes, semantic selection, overrides, requests, and versions |
+
+Authored source, rendering, voice generation, and provider credentials stay on
+your machine. HTML Docs hosts private project versions, collaborative pages,
+the live Player, Guided Studio, course sites, and explicitly published media.
+
+## Local project commands
+
+The skill invokes these for you, but every stage is inspectable:
 
 ```bash
-npx @html-docs/cli auth
-```
+# Any source, with an explicit or automatic output mode
+html-docs project init ./source --mode auto --output ./explanation
+html-docs project build ./explanation
+html-docs project audit ./explanation
+html-docs project preview ./explanation
 
-Saves your API key to `~/.htmldocs/credentials`. After this, all publishes are permanent.
+# A video
+html-docs/scripts/video.sh build ./video-project
+html-docs/scripts/video.sh check ./video-project
+html-docs/scripts/video.sh audit ./video-project
+html-docs/scripts/video.sh render ./video-project --output ./final.mp4
 
-### Update
-
-```bash
-npx @html-docs/cli update <doc-id> page.html --token <token>
-```
-
-### Generate and embed a video
-
-Requires an authenticated document owned by the API-key account. The agent
-authors a `video.project.json` with scene modules and narration cues; Chromium
-and FFmpeg compile, audit, and render it locally:
-
-```bash
-npx @html-docs/cli video <doc-id> ./video-project \
-  --prompt "Animate the three most important ideas" \
-  --provider codex --quality standard
-```
-
-When using the installed skill directly, its `scripts/video.sh` wrapper prefers
-a local HTML Docs checkout (including `~/projects/html-docs`) and falls back to
-`@html-docs/html-video` once that renderer package is published.
-
-### Generate a private course preview
-
-```bash
+# A course
 html-docs/scripts/video.sh course init ./source \
   --output ./course-project --title "Course title"
 html-docs/scripts/video.sh course build ./course-project
@@ -137,69 +160,49 @@ html-docs/scripts/video.sh course preview ./course-project
 html-docs/scripts/video.sh course publish ./course-project
 ```
 
-The CLI handles source snapshots, deterministic compilation, validation,
-rendering, diffing, and sync. The active agent authors the curriculum, lesson
-pages, scripts, storyboards, semantic scenes, voice/captions, and checks.
-Automatic runs create private previews; public or unlisted publishing is
-explicit.
+Renderer frame caches are content-addressed. If Chromium or FFmpeg is
+interrupted, rerunning the render reuses every completed deterministic frame.
 
-### Direct curl (no install needed)
+The scaffold is only a normalized starting point. The active agent replaces it
+with the evidence graph, curriculum, lesson pages, narration, storyboards,
+semantic scenes, captions, and checks.
+
+## Publish any HTML
+
+The document-only path stays one command:
 
 ```bash
-curl -X POST https://www.html-docs.com/api/v1/docs \
-  -H 'Content-Type: text/html' \
-  --data-binary @page.html
+npx @html-docs/cli publish page.html
+# → https://www.html-docs.com/site/<slug>
 ```
 
-## Response
+Authenticate owned work:
 
-```json
-{
-  "id": "doc-uuid",
-  "url": "https://www.html-docs.com/site/my-dashboard",
-  "slug": "my-dashboard",
-  "editUrl": "https://www.html-docs.com/s/ab12cd34?present=1",
-  "token": "ab12cd34"
-}
+```bash
+npx @html-docs/cli auth
 ```
 
-- **`url`** — the hosted page. Raw HTML, no editor. Share this.
-- **`editUrl`** — opens the editor. Collaborate, comment, version.
-- **`slug`** — the URL path. Customizable.
-- **`token`** — keep this for updates.
+Install the MCP server in detected clients:
 
-## Agent compatibility
+```bash
+npx @html-docs/cli install
+```
 
-Works with any AI agent that can make HTTP requests or use MCP:
+Available tools include document publishing, reading, updating, commenting,
+video synchronization, and project operations. See the
+[agent guide](https://www.html-docs.com/agents) and
+[API reference](https://www.html-docs.com/developers).
 
-- Claude Code (MCP or skill)
-- Cursor (MCP or skill)
-- Windsurf (MCP)
-- Cline (MCP)
-- Codex
-- OpenClaw
-- Amp
-- Gemini CLI
-- Any HTTP-capable tool
+## Portable artifacts
 
-### MCP tools
+Courses and videos are ordinary folders with JSON manifests, Markdown briefs,
+HTML/CSS/JavaScript scene modules, audio files, timed words, captions, evidence
+records, quality reports, and rendered fallbacks. They can be inspected,
+versioned, moved, rendered locally, or hosted independently.
 
-When running as an MCP server (`--mcp`), the following tools are available:
+## License and provenance
 
-| Tool | Description |
-|------|-------------|
-| `publish` | Publish HTML content to a live URL |
-| `publish_file` | Publish a local HTML file to a live URL |
-| `update` | Update an existing document |
-| `read` | Read a document's content and regions |
-| `comment` | Add a comment anchored to specific text |
-| `list_comments` | List all comments on a document |
-| `generate_video` | Render an agent-authored local composition, upload it, and insert the video |
-
-## API docs
-
-Full reference: [html-docs.com/developers](https://www.html-docs.com/developers)
-
-## License
-
-MIT
+The HTML Docs skill, Producer, Player, and Studio are MIT licensed. Third-party
+dependencies and adapted design references are recorded in
+[`NOTICE`](./html-docs/references/NOTICE). See [`PROVENANCE.md`](./PROVENANCE.md)
+and [`THIRD_PARTY_NOTICES.md`](./THIRD_PARTY_NOTICES.md) for release provenance.

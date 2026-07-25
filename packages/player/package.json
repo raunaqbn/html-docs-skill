@@ -1,0 +1,33 @@
+{
+  "name": "@html-docs/player",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Embeddable live HTML video player for HTML Docs compositions.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/raunaqbn/html-docs-skill.git",
+    "directory": "packages/player"
+  },
+  "homepage": "https://www.html-docs.com/showcase",
+  "files": [
+    "src/",
+    "!src/*.test.ts",
+    "README.md",
+    "tsconfig.json"
+  ],
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "test": "node --import tsx --test src/*.test.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "tsx": "^4.22.4"
+  },
+  "devDependencies": {
+    "@types/node": "^22",
+    "typescript": "5.7.3"
+  }
+}

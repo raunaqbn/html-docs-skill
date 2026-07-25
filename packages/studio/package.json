@@ -1,0 +1,43 @@
+{
+  "name": "@html-docs/studio",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Evidence-aware educational video Studio for HTML Docs.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/raunaqbn/html-docs-skill.git",
+    "directory": "packages/studio"
+  },
+  "homepage": "https://www.html-docs.com/showcase",
+  "files": [
+    "src/",
+    "!src/*.test.ts",
+    "README.md",
+    "tsconfig.json"
+  ],
+  "exports": {
+    ".": "./src/index.ts",
+    "./model": "./src/model.ts"
+  },
+  "scripts": {
+    "test": "node --import tsx --test src/*.test.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@html-docs/html-video": "workspace:*",
+    "tsx": "^4.22.4"
+  },
+  "peerDependencies": {
+    "react": ">=18",
+    "react-dom": ">=18"
+  },
+  "devDependencies": {
+    "@types/node": "^22",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "react": "^19",
+    "react-dom": "^19",
+    "typescript": "5.7.3"
+  }
+}

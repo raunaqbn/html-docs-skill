@@ -1,0 +1,31 @@
+{
+  "kind": "html-docs-launch-example",
+  "version": 1,
+  "mode": "course",
+  "title": "How attention routes information",
+  "voiceProfile": "warm-teacher",
+  "sources": [
+    {
+      "id": "vaswani-2017",
+      "uri": "https://arxiv.org/abs/1706.03762",
+      "title": "Attention Is All You Need"
+    },
+    {
+      "id": "bahdanau-2014",
+      "uri": "https://arxiv.org/abs/1409.0473",
+      "title": "Neural Machine Translation by Jointly Learning to Align and Translate"
+    }
+  ],
+  "lessons": [
+    "Why content-addressed routing is useful",
+    "Queries, keys, values, and scaled similarity",
+    "Multi-head attention as parallel routing spaces",
+    "Masking and one complete token walkthrough"
+  ],
+  "qualityRequirements": {
+    "claimEvidence": true,
+    "captionDefault": true,
+    "framingSystemsPerLesson": 3,
+    "cueOwnership": "exactly-one"
+  }
+}

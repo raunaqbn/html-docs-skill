@@ -6,7 +6,7 @@ set -euo pipefail
 caller_dir="$PWD"
 renderer_args=("$@")
 target_index=1
-if (( ${#renderer_args[@]} >= 1 )) && [[ "${renderer_args[0]}" == "course" ]]; then
+if (( ${#renderer_args[@]} >= 1 )) && [[ "${renderer_args[0]}" =~ ^(course|project)$ ]]; then
   target_index=2
 elif (( ${#renderer_args[@]} >= 1 )) && [[ "${renderer_args[0]}" == "studio" ]]; then
   target_index=-1
@@ -15,7 +15,7 @@ if (( target_index >= 0 && ${#renderer_args[@]} > target_index )) && [[ "${rende
   renderer_args[$target_index]="$caller_dir/${renderer_args[$target_index]}"
 fi
 for ((i = 0; i < ${#renderer_args[@]}; i++)); do
-  if [[ "${renderer_args[$i]}" =~ ^--(output|output-dir|voiceover|source)$ ]] && (( i + 1 < ${#renderer_args[@]} )) && [[ "${renderer_args[$((i + 1))]}" != /* ]]; then
+  if [[ "${renderer_args[$i]}" =~ ^--(output|output-dir|voiceover|source|project)$ ]] && (( i + 1 < ${#renderer_args[@]} )) && [[ "${renderer_args[$((i + 1))]}" != /* ]]; then
     renderer_args[$((i + 1))]="$caller_dir/${renderer_args[$((i + 1))]}"
   fi
 done

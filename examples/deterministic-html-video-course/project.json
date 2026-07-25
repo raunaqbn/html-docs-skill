@@ -1,0 +1,31 @@
+{
+  "kind": "html-docs-launch-example",
+  "version": 1,
+  "mode": "course",
+  "title": "How deterministic HTML video works",
+  "audience": "Engineers building media systems",
+  "voiceProfile": "precise-engineer",
+  "source": {
+    "type": "codebase",
+    "paths": [
+      "packages/html-video/src/runtime.ts",
+      "packages/html-video/src/renderer.ts",
+      "packages/html-video/src/audio.ts",
+      "packages/html-video/src/quality.ts",
+      "packages/player/src/index.ts",
+      "packages/studio/src/GuidedStudio.tsx"
+    ]
+  },
+  "modules": [
+    "The deterministic composition contract",
+    "Final audio as the timing authority",
+    "Cue ownership and semantic targets",
+    "Seek-safe Chromium rendering",
+    "The live Player",
+    "Evidence-aware refinement in Studio"
+  ],
+  "publication": {
+    "defaultVisibility": "private",
+    "showcase": "https://www.html-docs.com/showcase"
+  }
+}
