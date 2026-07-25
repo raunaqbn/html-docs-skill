@@ -24,6 +24,28 @@
     "The live Player",
     "Evidence-aware refinement in Studio"
   ],
+  "learningSystem": {
+    "purpose": "Build and debug a deterministic narrated HTML-video pipeline.",
+    "finishLine": [
+      "Explain why explicit frame time produces reproducible pixels",
+      "Trace final narration words through cues, captions, scenes, and rendering",
+      "Diagnose a non-deterministic or out-of-sync composition"
+    ],
+    "masteryModel": "evidence-state",
+    "practice": [
+      "Predict whether two frame captures will match",
+      "Repair a cue-ownership violation with guidance",
+      "Debug a new drift case independently"
+    ]
+  },
+  "production": {
+    "strategy": "vertical-slices",
+    "validationSeams": [
+      "Source line to architecture claim",
+      "Final word track to deterministic live and rendered playback",
+      "Learner diagnosis to misconception-specific feedback"
+    ]
+  },
   "publication": {
     "defaultVisibility": "private",
     "showcase": "https://www.html-docs.com/showcase"

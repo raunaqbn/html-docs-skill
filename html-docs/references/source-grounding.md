@@ -62,6 +62,11 @@ Research before outlining:
 Do not cite search-result pages. Keep claims narrower than their evidence.
 Distinguish source facts from agent inference.
 
+For a course, maintain an annotated `learning/RESOURCES.md` alongside the
+machine-readable evidence graph. Record what each source is authoritative for,
+when to consult it, and any evidence gap still blocking a lesson. Prefer a
+small, sharp source set over a long undifferentiated bibliography.
+
 ## Evidence graph
 
 Represent:

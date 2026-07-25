@@ -36,7 +36,7 @@ media, and publish a private preview.
 | **Document** | `Use $html-docs to research this topic and make a beautiful, cited visual document.` |
 | **Video** | `Use $html-docs to turn this URL into a five-minute captioned explainer video.` |
 | **Document + video** | `Use $html-docs to explain this paper with a rich page and embedded narrated video.` |
-| **Complete course** | `Use $html-docs to turn this folder into a private course with lessons, videos, checks, and progress.` |
+| **Complete course** | `Use $html-docs to turn this folder into a private adaptive course with a learner mission, lessons, videos, practice, feedback, and mastery evidence.` |
 | **Auto** | `Use $html-docs to choose the clearest format for explaining this source.` |
 
 Automatic runs stay private. Public or unlisted publication is a separate,
@@ -85,7 +85,10 @@ folder · repo · URL · PDF · document · topic
           source snapshot + evidence graph
                       │
                       ▼
-        course map · lesson model · design system
+        learner contract · course specification
+                      │
+                      ▼
+        vertical lesson slices · mastery evidence
                       │
            ┌──────────┴──────────┐
            ▼                     ▼
@@ -103,6 +106,10 @@ folder · repo · URL · PDF · document · topic
 
 The page and video share one evidence model but serve different jobs: the page
 is the detailed reference; the video teaches the core mechanism visually.
+Courses also preserve the learner’s purpose, canonical terminology,
+demonstrated capabilities, misconceptions, retrieval schedule, source ledger,
+and the decision trail behind the curriculum. Completion is navigation state;
+mastery requires evidence.
 
 ## Why the synchronization holds
 
@@ -164,8 +171,9 @@ Renderer frame caches are content-addressed. If Chromium or FFmpeg is
 interrupted, rerunning the render reuses every completed deterministic frame.
 
 The scaffold is only a normalized starting point. The active agent replaces it
-with the evidence graph, curriculum, lesson pages, narration, storyboards,
-semantic scenes, captions, and checks.
+with the evidence graph, learner contract, course specification, dependency
+map, vertical lesson slices, lesson pages, narration, storyboards, semantic
+scenes, diagnostic practice, captions, and checks.
 
 ## Publish any HTML
 
@@ -195,10 +203,11 @@ video synchronization, and project operations. See the
 
 ## Portable artifacts
 
-Courses and videos are ordinary folders with JSON manifests, Markdown briefs,
-HTML/CSS/JavaScript scene modules, audio files, timed words, captions, evidence
-records, quality reports, and rendered fallbacks. They can be inspected,
-versioned, moved, rendered locally, or hosted independently.
+Courses and videos are ordinary folders with JSON manifests, a learner
+contract, course specification, mastery records, production slices, Markdown
+briefs, HTML/CSS/JavaScript scene modules, audio files, timed words, captions,
+evidence records, quality reports, and rendered fallbacks. They can be
+inspected, versioned, moved, rendered locally, or hosted independently.
 
 ## License and provenance
 

@@ -22,6 +22,26 @@
     "Multi-head attention as parallel routing spaces",
     "Masking and one complete token walkthrough"
   ],
+  "learningSystem": {
+    "purpose": "Reason about what information each token can retrieve and why.",
+    "finishLine": [
+      "Compute and explain one attention route from query-key scores through the weighted value sum",
+      "Diagnose how masking or head specialization changes a routing outcome"
+    ],
+    "masteryModel": "evidence-state",
+    "practice": [
+      "Prediction before the equation build",
+      "Guided token-routing walkthrough",
+      "Changed-surface transfer problem with misconception feedback"
+    ]
+  },
+  "production": {
+    "strategy": "vertical-slices",
+    "validationSeams": [
+      "Primary-paper evidence to qualified claim",
+      "Objective to visual explanation and diagnostic transfer check"
+    ]
+  },
   "qualityRequirements": {
     "claimEvidence": true,
     "captionDefault": true,

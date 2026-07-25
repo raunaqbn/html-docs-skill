@@ -42,6 +42,22 @@ export const knowledgeCheckSchema = z.object({
   answer: z.number().int().min(0),
   explanation: z.string().min(1),
   evidenceIds: z.array(z.string().min(1)).min(1),
+  objectiveId: safeId.optional(),
+  kind: z.enum(['recall', 'application', 'discrimination', 'transfer']).optional(),
+  expectedReasoning: z.string().min(1).optional(),
+  feedback: z.object({
+    correct: z.string().min(1),
+    misconceptions: z.record(z.string().min(1)).default({}),
+  }).optional(),
+  masteryTransition: z.enum(['introduced', 'practiced', 'demonstrated', 'needs-review']).optional(),
+})
+
+export const masteryObjectiveSchema = z.object({
+  id: safeId,
+  objective: z.string().min(1),
+  successCriteria: z.array(z.string().min(1)).min(1),
+  prerequisiteObjectiveIds: z.array(safeId).default([]),
+  initialState: z.enum(['unseen', 'introduced', 'practiced', 'demonstrated', 'needs-review']).default('unseen'),
 })
 
 export const courseLessonSchema = z.object({
@@ -59,6 +75,14 @@ export const courseLessonSchema = z.object({
   compositionId: z.string().uuid().optional(),
   durationTargetMinutes: z.number().min(1).max(20).default(7),
   checks: z.array(knowledgeCheckSchema).min(2).max(4),
+  mastery: z.array(masteryObjectiveSchema).min(1).optional(),
+  practice: z.object({
+    retrieval: z.string().min(1),
+    guided: z.string().min(1),
+    transfer: z.string().min(1),
+    feedback: z.string().min(1),
+  }).optional(),
+  productionSlice: z.string().min(1).optional(),
   status: z.enum(['planned', 'authored', 'built', 'stale', 'conflicted']).default('planned'),
 })
 
@@ -86,6 +110,18 @@ export const courseProjectSchema = z.object({
     evidencePath: z.string().min(1).default('source/evidence.jsonl'),
     fingerprintsPath: z.string().min(1).default('source/fingerprints.json'),
   }),
+  learning: z.object({
+    learnerPath: z.string().min(1).default('learning/LEARNER.md'),
+    glossaryPath: z.string().min(1).default('learning/GLOSSARY.md'),
+    resourcesPath: z.string().min(1).default('learning/RESOURCES.md'),
+    recordsDirectory: z.string().min(1).default('learning/records'),
+    masteryModel: z.literal('evidence-state').default('evidence-state'),
+  }).optional(),
+  production: z.object({
+    specificationPath: z.string().min(1).default('COURSE-SPEC.md'),
+    slicesDirectory: z.string().min(1).default('production'),
+    strategy: z.literal('vertical-slices').default('vertical-slices'),
+  }).optional(),
   website: z.object({
     slug: z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
     trailerCompositionId: z.string().uuid().optional(),
@@ -443,11 +479,52 @@ export async function buildCourse(input: string): Promise<{
 
 export async function auditCourse(input: string, minimumScore = 78): Promise<{
   ok: boolean
+  findings: Array<{ severity: 'error' | 'warning'; message: string; lessonId?: string }>
   lessons: Array<{ id: string; ok: boolean; score: number; reportPath: string }>
 }> {
   const { root, project } = await loadCourseProject(input)
   const results: Array<{ id: string; ok: boolean; score: number; reportPath: string }> = []
+  const findings: Array<{ severity: 'error' | 'warning'; message: string; lessonId?: string }> = []
+  if (project.learning) {
+    for (const [label, path] of [
+      ['learner contract', project.learning.learnerPath],
+      ['canonical glossary', project.learning.glossaryPath],
+      ['trusted-resource ledger', project.learning.resourcesPath],
+    ] as const) {
+      if (!(await pathExists(safeResolve(root, path)))) {
+        findings.push({ severity: 'error', message: `Course is missing its ${label}: ${path}` })
+      }
+    }
+  }
+  if (project.production) {
+    if (!(await pathExists(safeResolve(root, project.production.specificationPath)))) {
+      findings.push({ severity: 'error', message: `Course is missing its production specification: ${project.production.specificationPath}` })
+    }
+    if (!(await pathExists(safeResolve(root, project.production.slicesDirectory)))) {
+      findings.push({ severity: 'error', message: `Course is missing its production slices: ${project.production.slicesDirectory}` })
+    }
+  }
   for (const lesson of allLessons(project)) {
+    if (project.learning && !lesson.mastery?.length) {
+      findings.push({ severity: 'error', lessonId: lesson.id, message: 'Lesson has no evidence-based mastery objectives.' })
+    }
+    if (project.learning && !lesson.practice) {
+      findings.push({ severity: 'error', lessonId: lesson.id, message: 'Lesson has no retrieval, guided practice, transfer, and feedback contract.' })
+    }
+    if (project.production && !lesson.productionSlice) {
+      findings.push({ severity: 'error', lessonId: lesson.id, message: 'Lesson is not linked to a vertical production slice.' })
+    } else if (lesson.productionSlice && !(await pathExists(safeResolve(root, lesson.productionSlice)))) {
+      findings.push({ severity: 'error', lessonId: lesson.id, message: `Lesson production slice does not exist: ${lesson.productionSlice}` })
+    }
+    const objectiveIds = new Set(lesson.mastery?.map((objective) => objective.id) ?? [])
+    for (const check of lesson.checks) {
+      if (objectiveIds.size && (!check.objectiveId || !objectiveIds.has(check.objectiveId))) {
+        findings.push({ severity: 'error', lessonId: lesson.id, message: `Check ${check.id} is not linked to a mastery objective.` })
+      }
+      if (project.learning && (!check.kind || !check.expectedReasoning || !check.feedback || !check.masteryTransition)) {
+        findings.push({ severity: 'error', lessonId: lesson.id, message: `Check ${check.id} is missing diagnostic learning metadata.` })
+      }
+    }
     const loaded = await compileVideoProject(safeResolve(root, lesson.videoProject))
     const audit = await auditComposition(loaded.composition, { minimumScore })
     const qualityDir = join(dirname(safeResolve(root, lesson.videoProject)), 'quality')
@@ -469,7 +546,11 @@ export async function auditCourse(input: string, minimumScore = 78): Promise<{
     await writeFile(join(qualityDir, 'waveform.json'), `${JSON.stringify({ durationMs: loaded.composition.durationMs, samples: waveform }, null, 2)}\n`)
     results.push({ id: lesson.id, ok: audit.report.ok, score: audit.report.score, reportPath })
   }
-  return { ok: results.every((result) => result.ok), lessons: results }
+  return {
+    ok: findings.every((finding) => finding.severity !== 'error') && results.every((result) => result.ok),
+    findings,
+    lessons: results,
+  }
 }
 
 export async function diffCourseSource(input: string, sourcePath?: string): Promise<{
@@ -520,6 +601,15 @@ export function safeResolve(root: string, path: string): string {
   const rel = relative(absoluteRoot, output)
   if (rel.startsWith('..') || isAbsolute(rel)) throw new Error(`Course path escapes its root: ${path}`)
   return output
+}
+
+async function pathExists(path: string): Promise<boolean> {
+  try {
+    await stat(path)
+    return true
+  } catch {
+    return false
+  }
 }
 
 async function listSourceFiles(root: string): Promise<string[]> {

@@ -56,6 +56,10 @@ development, and deterministic seeking. `publish` enforces the same gate.
 artifact. Source normalization respects Git ignores and excludes credentials,
 dependencies, binaries, and build output. Stable evidence records and file
 fingerprints let the agent ground claims and refresh only affected lessons.
+New course projects also contain an observable learner contract, canonical
+glossary, annotated resource ledger, evidence-state mastery objectives,
+diagnostic practice, a decision-rich course specification, and dependency-aware
+vertical production slices. Existing `CourseProject v1` bundles remain readable.
 
 ```bash
 html-docs-video course init ./source --output ./course-project --title "Servo control"
@@ -71,6 +75,11 @@ html-docs-video course publish ./course-project --visibility unlisted
 The CLI never calls a second model. The active Codex or Claude session authors
 lesson pages, narration, storyboards, scene modules, and checks. Automatic runs
 end as private previews; `--visibility unlisted|public` is explicit.
+
+Course audits verify the learning and production contracts as well as the
+render: each adaptive lesson needs mastery success criteria, retrieval, guided
+practice, transfer, feedback, diagnostic check metadata, and a real production
+slice. Watching a lesson never counts as proof of mastery.
 
 ## Composition contract
 

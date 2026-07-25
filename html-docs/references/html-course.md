@@ -9,6 +9,9 @@ Produce:
 
 - Portable `CourseProject v1`.
 - Versioned source snapshot and evidence graph.
+- Learner contract, canonical glossary, trusted-resource ledger, and
+  evidence-backed learning records.
+- Decision-rich course specification and dependency-aware production slices.
 - Course homepage and cumulative module map.
 - Rich lesson pages.
 - One explanatory `VideoProject v2` for each lesson that benefits from motion.
@@ -28,8 +31,16 @@ limit.
 ```text
 course-project/
   course.project.json
+  COURSE-SPEC.md
   COURSE.md
   design.md
+  learning/
+    LEARNER.md
+    GLOSSARY.md
+    RESOURCES.md
+    records/
+  production/
+    01-foundations.md
   source/
     manifest.json
     evidence.jsonl
@@ -52,13 +63,22 @@ course-project/
 
 ## Design the curriculum
 
-1. Define audience, prerequisites, confusion gaps, and desired mastery.
+Read [learning-design.md](learning-design.md) and
+[course-specification.md](course-specification.md), then:
+
+1. Define the learner’s purpose, starting point, constraints, exclusions, and
+   observable finish line.
 2. Extract candidate concepts and dependencies from evidence.
-3. Reorganize them into a teaching sequence.
-4. Give each module one cumulative capability.
-5. Give each lesson two to four observable objectives.
-6. Record prerequisites, evidence IDs, and source dependencies.
-7. End modules with application or synthesis rather than repetition.
+3. Write the course specification, including learner journeys, teaching and
+   artifact decisions, assessment seams, uncertainties, and exclusions.
+4. Reorganize the concepts into a teaching sequence.
+5. Give each module one cumulative capability.
+6. Give each lesson two to four observable objectives and one useful win.
+7. Slice production vertically so each lesson is independently reviewable from
+   evidence through page, video, practice, feedback, and audit.
+8. Record prerequisites, blocking slices, evidence IDs, and source
+   dependencies.
+9. End modules with application or synthesis rather than repetition.
 
 Do not mirror file order, page order, or paper sections unless that is also the
 best learning order.
@@ -84,11 +104,14 @@ Create two to four checks per lesson. Each check includes:
 - Prompt.
 - Choices or expected response.
 - Correct answer.
-- Explanation.
+- Expected reasoning and targeted feedback.
+- Check kind: recall, application, discrimination, or transfer.
+- Objective ID and justified mastery-state transition.
 - Evidence IDs.
 
 Test the objective, not trivia about wording. Never invent an answer that is not
-supported by the evidence graph.
+supported by the evidence graph. Treat viewing and completion as exposure, not
+proof of mastery.
 
 ## Shared design system
 
@@ -129,6 +152,13 @@ Do not use `--visibility unlisted` or `public` without user authorization.
 Require:
 
 - Every substantive claim and answer has evidence.
+- The learner contract has a concrete purpose and observable finish line.
+- Every objective declares how mastery can be demonstrated.
+- Learning records reflect evidence, not content completion.
+- The course implementation matches the decisions and exclusions in
+  `COURSE-SPEC.md`.
+- Production slices are vertical, dependency-valid, and independently
+  reviewable.
 - Every lesson has a clear teaching job.
 - Objectives match lesson content and checks.
 - Each narrated video passes word/cue/scene ownership.
