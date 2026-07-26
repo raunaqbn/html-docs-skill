@@ -100,6 +100,14 @@ product mockups.
 Explore the live Player, course pages, source projects, and Studio artifacts in
 the [HTML Docs showcase](https://www.html-docs.com/showcase).
 
+### Complete course examples
+
+| Course | What you will build and understand |
+|---|---|
+| **[Robot Learning, Gently](https://www.html-docs.com/courses/42078fdc-ed98-474a-907b-5322346dbf61)** · 12 lessons | Move from the observation–policy–action loop through imitation and reinforcement learning, action representations, world models, and VLAs—then apply the theory in a measured ANIMA-Kiwi capstone. |
+| **[Build an LLM from First Principles](https://www.html-docs.com/courses/dda6b2c1-b6e5-4d35-b79b-9a6531b2260b)** · 11 lessons | Build the stack rather than treating it as a black box: scalar autodiff, embeddings, training diagnostics, causal attention, byte-pair tokenization, a decoder-only Transformer, and honest evaluation. |
+| **[The Inference Company Founder’s Field Course](https://www.html-docs.com/courses/300c8242-3c75-4d2d-a406-9f0b93c8bd6d)** · 7 lessons | Choose a defensible wedge, build and benchmark a production-shaped serving MVP, model the economics, operate it under load, and apply evidence gates before pursuing custom silicon. |
+
 Reproduction briefs and portable source ledgers live in
 [`examples/`](./examples): codebase → course, website → document + video, and
 research topic → course.
