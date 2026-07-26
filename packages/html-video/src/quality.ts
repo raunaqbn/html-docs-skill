@@ -28,19 +28,28 @@ export async function auditComposition(composition: VideoComposition, options: A
     id: 'narration-sync', score: syncScore, maxScore: 30,
     message: composition.narration ? `${composition.narration.cues.length} spoken cues are mapped to scene-owned visual targets.` : 'Silent video: narration synchronization is not applicable.',
   })
-  const captionScore = !composition.narration || composition.captions ? 10 : 0
+  const hasActiveWordCaptions = !composition.narration || (
+    Boolean(composition.captions) &&
+    composition.css.includes('.hv-caption-word[data-active="true"]') &&
+    composition.script.includes("'--hv-caption-active'")
+  )
+  const captionScore = !composition.narration ? 10 : hasActiveWordCaptions ? 10 : composition.captions ? 5 : 0
   metrics.push({
     id: 'caption-sync',
     score: captionScore,
     maxScore: 10,
     message: !composition.narration
       ? 'Silent video: captions are not applicable.'
-      : composition.captions
-        ? `${composition.captions.groups.length} caption groups derive from ${composition.captions.words.length} exact timed words.`
+      : hasActiveWordCaptions && composition.captions
+        ? `${composition.captions.groups.length} caption groups use exact timed words with an audio-synced active-word highlight.`
+        : composition.captions
+          ? 'Caption timing exists, but the rendered composition has no active-word highlight.'
         : 'Narrated video has no compiled caption track.',
   })
   if (composition.narration && !composition.captions) {
     findings.push({ code: 'missing_caption_track', severity: 'warning', message: 'Narrated final should include captions derived from the canonical word track.', path: 'captions' })
+  } else if (composition.narration && !hasActiveWordCaptions) {
+    findings.push({ code: 'missing_active_word_caption', severity: 'warning', message: 'Narrated final should render an active-word caption highlight from the canonical word track.', path: 'captions' })
   }
 
   const distinctLayouts = new Set(composition.scenes.map((scene) => scene.layout).filter(Boolean)).size

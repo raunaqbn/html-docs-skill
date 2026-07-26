@@ -107,6 +107,11 @@ Read both:
 - [references/video-scene-craft.md](references/video-scene-craft.md) for
   explanatory scene grammar, layout rhythm, cue choreography, and visual review.
 
+For narrated work, render captions in the composition itself as a karaoke rail:
+keep the phrase readable while the exact word currently spoken receives the
+design-matched highlight. WebVTT/SRT metadata alone is not a finished caption
+system.
+
 For a narrated explainer:
 
 ```bash

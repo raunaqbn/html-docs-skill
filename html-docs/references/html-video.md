@@ -15,7 +15,9 @@ A final must provide:
 - Exact word timings from the final audio.
 - One cue and one scene owner for every spoken word.
 - One or more same-scene semantic targets for every cue.
-- Captions derived from the same word track.
+- Semantic caption groups and a visible karaoke-style active-word treatment
+  derived from the same word track. A caption manifest without the rendered
+  highlight is not a finished caption system.
 - Deterministic seeking and a passing sound-on visual audit.
 - A live HTML player plus MP4 fallback.
 
@@ -132,11 +134,30 @@ reason to differ. Shift timestamps mechanically when adding holds.
 Build semantic caption groups from punctuation, pauses, and phrase structure:
 
 - Usually two to six words.
-- One active group at a time.
-- Active-word emphasis from exact timings.
+- One active group at a time. Keep the full phrase readable.
+- Give the exact word currently spoken an accent pill and restrained scale pop
+  driven by its canonical `startMs` and `endMs`.
 - Bottom 17% reserved across all scenes.
 - Default on in the live player and captioned MP4.
 - Also export WebVTT and SRT.
+
+Match the compiler's baseline treatment to `design.md` in `global.css`:
+
+```css
+:root {
+  --hv-caption-bg: rgba(247, 242, 225, 0.94);
+  --hv-caption-border: #d989a8;
+  --hv-caption-text: #25251f;
+  --hv-caption-inactive-opacity: 0.82;
+  --hv-caption-accent: #d989a8;
+  --hv-caption-active-text: #25251f;
+}
+```
+
+Do not remove `.hv-caption-word[data-active="true"]` or replace the in-frame
+rail with WebVTT/SRT-only output. Sample word starts, midpoints, ends, and short
+pauses during audit. Exactly one word should carry the highlight while spoken,
+without leading, lagging, or covering scene content.
 
 Do not independently retime captions. Cues, captions, scenes, and transcript all
 derive from one normalized word track.

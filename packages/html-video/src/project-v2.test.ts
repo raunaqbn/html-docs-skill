@@ -114,6 +114,10 @@ test('compiles one canonical v2 word track into cues, captions, and chapters', a
     assert.equal(loaded.composition.narration?.words?.length, 3)
     assert.equal(loaded.composition.captions?.groups.length, 1)
     assert.match(loaded.composition.captions?.webVtt ?? '', /Build the model/)
+    assert.match(loaded.composition.css, /\.hv-caption-word\[data-active="true"\]/)
+    assert.match(loaded.composition.css, /background:var\(--hv-caption-accent/)
+    assert.match(loaded.composition.script, /word\.startMs/)
+    assert.match(loaded.composition.script, /--hv-caption-active/)
     assert.equal(loaded.composition.chapters?.[0].startMs, 0)
     assert.equal(validateCompositionStatic(loaded.composition).ok, true)
   } finally {

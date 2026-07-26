@@ -280,8 +280,10 @@ export async function compileVideoProject(projectFile: string, input?: unknown):
       '.hv-scene[aria-hidden="false"]{display:block}',
       captionGroups
         ? '#hv-caption-safe-area{position:absolute;z-index:9999;left:7%;right:7%;bottom:3%;height:14%;display:flex;align-items:center;justify-content:center;pointer-events:none}' +
-          '#hv-caption-line{max-width:88%;padding:.34em .72em;border-radius:.55em;background:rgba(8,10,16,.82);color:#fff;font:700 clamp(24px,3.1vw,44px)/1.18 ui-sans-serif,system-ui,sans-serif;text-align:center;letter-spacing:-.02em;box-shadow:0 12px 35px rgba(0,0,0,.24)}' +
-          '#hv-caption-line .hv-caption-word{opacity:.68}#hv-caption-line .hv-caption-word[data-active="true"]{opacity:1;color:var(--hv-caption-accent,#ffe58f)}'
+          '#hv-caption-line{max-width:88%;padding:.3em .58em;border:1px solid var(--hv-caption-border,rgba(255,255,255,.22));border-radius:.5em;background:var(--hv-caption-bg,rgba(8,10,16,.84));color:var(--hv-caption-text,#fff);font:750 clamp(34px,4.25vw,61px)/1.16 ui-sans-serif,system-ui,sans-serif;text-align:center;letter-spacing:-.025em;box-shadow:0 12px 35px rgba(0,0,0,.24)}' +
+          '#hv-caption-line .hv-caption-word{position:relative;isolation:isolate;display:inline-block;padding:.035em .14em;border-radius:.2em;opacity:var(--hv-caption-inactive-opacity,.72);transform:scale(1);transform-origin:50% 62%}' +
+          '#hv-caption-line .hv-caption-word::before{content:"";position:absolute;z-index:-1;inset:-.02em -.04em;border-radius:.2em;background:var(--hv-caption-accent,#e79ab3);opacity:var(--hv-caption-active,0);transform:scale(calc(.88 + var(--hv-caption-active,0)*.12));box-shadow:0 .08em .22em rgba(0,0,0,.16)}' +
+          '#hv-caption-line .hv-caption-word[data-active="true"]{opacity:1;color:var(--hv-caption-active-text,#17171b)}'
         : '',
       globalCss,
       ...sourceScenes.map((scene) => `/* html-video-scene-css:start ${scene.id} */\n${scene.cssSource}\n/* html-video-scene-css:end ${scene.id} */`),
@@ -523,7 +525,15 @@ function renderCaption(root,timeMs){
   group.words.forEach(function(word,index){
     if(index)line.appendChild(document.createTextNode(' '));
     var span=document.createElement('span');span.className='hv-caption-word';span.textContent=word.text;
-    span.setAttribute('data-active',timeMs>=word.startMs&&timeMs<=word.endMs?'true':'false');line.appendChild(span);
+    var active=timeMs>=word.startMs&&timeMs<=word.endMs;
+    var attackEnd=Math.min(word.endMs,word.startMs+70),releaseStart=Math.max(word.startMs,word.endMs-85);
+    var attack=window.HtmlVideoRuntime.phase(timeMs,word.startMs,attackEnd);
+    var release=1-window.HtmlVideoRuntime.phase(timeMs,releaseStart,word.endMs);
+    var emphasis=active?Math.min(attack,release):0;
+    span.setAttribute('data-active',active?'true':'false');
+    span.style.setProperty('--hv-caption-active',String(emphasis));
+    span.style.transform='scale('+(1+emphasis*.045)+')';
+    line.appendChild(span);
   });
 }
 window.__HTML_VIDEO__={renderFrame:function(ctx){

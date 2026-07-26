@@ -100,6 +100,11 @@ Keep critical diagrams above the bottom caption reserve. Place labels near their
 referents. Use consistent colors for the same entities throughout the lesson.
 When narration names a part, highlight that part—not the entire diagram.
 
+Keep each caption phrase readable while the exact spoken word receives a
+design-matched accent pill and restrained scale pop. Audit word starts,
+midpoints, ends, and pauses so the highlight follows the audio without leading,
+lagging, or leaving two words active.
+
 Keep display copy shorter than narration. Use a large label, a concise
 annotation, and the visual relation itself to carry meaning.
 
