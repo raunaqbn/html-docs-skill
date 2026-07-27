@@ -14,9 +14,10 @@ impeccable
   Source:  https://github.com/pbakaus/impeccable
   License: Apache License, Version 2.0
 
-  The anti-pattern catalog in references/anti-slop.md and the steering
-  vocabulary in references/design-commands.md draw on impeccable's catalog of
-  anti-patterns ("slop") in AI-generated UI and its set of design commands.
+  The reading-surface contract in references/design-system.md, the anti-pattern
+  catalog in references/anti-slop.md, and the steering vocabulary in
+  references/design-commands.md draw on impeccable's design principles,
+  catalog of anti-patterns ("slop") in AI-generated UI, and design commands.
   Concepts were adapted and rewritten for documents; detector rules were
   reframed as authoring heuristics.
 

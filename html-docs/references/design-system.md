@@ -42,6 +42,39 @@ Never ship plain HTML.
 
 ---
 
+## Reading-surface contract
+
+Documents are reading surfaces before they are compositions. Apply these
+constraints before choosing decorative treatments:
+
+1. Preserve a clear linear reading path. A reader should understand what comes
+   first, what belongs together, and what matters most without decoding the
+   layout.
+2. Assign stable content roles: one title; consistent section-heading ranks;
+   body; labels; evidence; actions; notes. One role gets one treatment.
+3. Create hierarchy with type, weight, and spacing first. Borders, surfaces,
+   shadows, and cards must communicate grouping, status, or comparison.
+4. Keep long-form text near 45–75 characters per line. Use tighter line height
+   for large display type and more open leading for sustained reading.
+5. Keep items within a group close and put visibly more space between groups.
+   Flatten wrappers that do not add meaning. Never make every group a card or
+   nest decorative cards.
+6. Define color by role—ink, muted ink, surface, border, accent, positive,
+   warning, critical—and reuse roles consistently. State cannot rely on color
+   alone.
+7. A visualization must prove a relationship: sequence, causality,
+   comparison, distribution, dependency, or decision. Label that relationship,
+   not just the boxes.
+8. Preserve reading order at narrower widths. Grids should collapse naturally;
+   tables and diagrams cannot depend on hover.
+
+For agent insertion, prefer the deterministic Docsmith visual grammar:
+`callout`, `metrics`, `flow`, `timeline`, `comparison`, and `matrix`. Supply
+meaning and labels; let the server own rendering. Hand-author SVG only when the
+relationship cannot be expressed by those patterns.
+
+---
+
 ## Anti-slop rules (non-negotiable — all must hold)
 
 | Rule | Why |

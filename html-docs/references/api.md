@@ -173,10 +173,49 @@ Format one exact node-relative range in a structured document:
 
 Structured commands also include `replace_text`, `insert_nodes`,
 `delete_nodes`, `move_node`, `set_node_type`, `set_node_attributes`, and
-`set_document_theme`. Use block/node types for hierarchy and marks only for
+`set_document_theme`. They also support an explicit `replace_document` command
+whose `content` is a complete structured `doc` JSON object and whose optional
+`theme` is applied with it. `replace_document` must be the only command in its
+batch. Use it only for an explicit whole-document request; acceptance creates a
+forced recovery version and the complete replacement is one collaborative undo
+event.
+
+Use block/node types for hierarchy and marks only for
 character-level formatting. Prefer one title, consistent heading levels,
 predictable labels, short paragraphs or lists, and a brief final Notes section.
 Do not simulate layout with spaces, tabs, or empty paragraphs.
+
+### POST /api/v1/docs/:id/editor/visuals — Design-system visual
+
+Insert one deterministic visual after a real region key or structured node ID.
+The same schema renders in both editors, all supplied strings are escaped, and
+the server creates a recovery version before committing through the active
+collaboration backend.
+
+```json
+{
+  "anchor_id": "region-a1",
+  "spec": {
+    "kind": "flow",
+    "title": "Review path",
+    "eyebrow": "Decision workflow",
+    "summary": "Every change has a visible owner and recovery path.",
+    "tone": "forest",
+    "items": [
+      { "title": "Draft", "detail": "Create semantic blocks." },
+      { "title": "Review", "detail": "Comment on exact passages." },
+      { "title": "Decide", "detail": "Accept or restore." }
+    ],
+    "note": "Arrows indicate sequence, not system boundaries."
+  }
+}
+```
+
+`kind` is `callout`, `metrics`, `flow`, `timeline`, `comparison`, or
+`matrix`. Tones are `ink`, `ocean`, `forest`, `amber`, `plum`, and `rose`.
+Metrics use `items[].label/value/detail`; comparison additionally supports
+`left` (strength) and `right` (trade-off). A matrix uses `columns` plus
+`rows: [{ "label": "...", "values": ["..."] }]`.
 
 ### POST /api/v1/docs/:id/videos — Generate and embed video
 

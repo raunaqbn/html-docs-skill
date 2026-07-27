@@ -120,6 +120,19 @@ command batch creates a recovery version and publishes through the
 collaboration backend, so do not replace the whole document for a local
 formatting change.
 
+For a flow, timeline, callout, metric strip, comparison, or decision matrix,
+send a semantic visual specification to
+`POST /api/v1/docs/:id/editor/visuals`; do not improvise a large HTML/SVG block.
+The endpoint uses the same deterministic renderer as Docsmith in both editor
+engines and creates a recovery version first.
+
+When the user explicitly asks for a complete transformation, read the entire
+editor payload before writing. For structured documents, send one isolated
+`replace_document` command with the complete semantic `doc` JSON. For region
+documents, use a conditional whole-document `PUT` with the latest ETag. Both
+paths must preserve the pre-change version; a `409` or `412` means reread and
+replan, not force overwrite.
+
 ## Video workflow
 
 Read both:
