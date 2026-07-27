@@ -1,6 +1,6 @@
 {
   "name": "@html-docs/html-video",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "private": false,
   "type": "module",
   "description": "Deterministic HTML composition validation, preview, and video rendering for HTML Docs.",

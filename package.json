@@ -1,6 +1,6 @@
 {
   "name": "@html-docs/cli",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "description": "Turn source material into beautiful HTML documents, explanatory videos, and learning courses.",
   "author": "Raunaq Naidu <raunaqbn@gmail.com>",
   "license": "MIT",

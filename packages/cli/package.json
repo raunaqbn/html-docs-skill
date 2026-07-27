@@ -1,6 +1,6 @@
 {
   "name": "@html-docs/cli-workspace",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "private": true,
   "description": "Workspace boundary for the compatibility-preserving root @html-docs/cli release."
 }

@@ -8,6 +8,8 @@ importers:
 
   .: {}
 
+  packages/cli: {}
+
   packages/html-video:
     dependencies:
       '@sparticuz/chromium':
