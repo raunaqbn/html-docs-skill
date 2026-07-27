@@ -98,6 +98,28 @@ Read [references/api.md](references/api.md) when editing regions, commenting,
 versioning, or using document APIs. Read [references/pdf.md](references/pdf.md)
 for PDF import or export.
 
+For documents that will be reviewed or updated later, give each meaningful
+HTML block a stable `data-hd-block-id`. Use targeted block/region PATCH calls
+for local changes. Before a whole-document PUT, GET the document and send its
+ETag in `If-Match`; never overwrite a newer human review revision blindly.
+
+### Agent editing loop
+
+For an existing HTML Docs document, treat `GET /api/v1/docs/:id/editor` as the
+live semantic source of truth. Apply the smallest precise batch through
+`POST /api/v1/docs/:id/editor/commands`, then read the editor state again to
+verify it. Use visible UTF-16 offsets and `expectedText` for region selections;
+round-trip `node_checks` as `target_checks` for structured documents. A `409`
+is a request to reread and replan, never permission to overwrite.
+
+Use `set_marks` to format only the selected phrase, semantic block/node types
+for hierarchy, bounded block styles for alignment and spacing, and comments for
+review feedback. Prefer one title, consistent heading levels, predictable
+labels, short paragraphs or lists, and a final Notes section. Every agent
+command batch creates a recovery version and publishes through the
+collaboration backend, so do not replace the whole document for a local
+formatting change.
+
 ## Video workflow
 
 Read both:
